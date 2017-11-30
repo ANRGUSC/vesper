@@ -1,13 +1,17 @@
-import config as cfg
 import cPickle as pickle
-
-from myobject import MyObject
 
 from twisted.internet.protocol import Factory, Protocol
 from twisted.internet.endpoints import TCP4ServerEndpoint
 from twisted.protocols.basic import NetstringReceiver
 from twisted.protocols.policies import TimeoutMixin
 from twisted.internet import reactor
+
+import sys
+sys.path.append('../')
+
+import config as cfg
+from myobject import MyObject
+
 
 class ServerProtocol(MyObject, NetstringReceiver, TimeoutMixin):
     """Server protocol for Twisted framework."""
@@ -60,6 +64,17 @@ class ServerFactory(MyObject, Factory):
         return self.protocol(self)
 
 
+class Server():
+
+    def __init__(self, service, port, interface=''):
+        endpoint = TCP4ServerEndpoint(reactor, port,
+                                      interface=interface)
+        endpoint.listen(ServerFactory(service))
+
+    def run(self):
+        reactor.run()
+
+
 if __name__ == '__main__':
     import copy
     import logging.config
@@ -82,7 +97,4 @@ if __name__ == '__main__':
         def disconnected(self, protocol):
             self.log().info('disconnection()')
 
-
-    endpoint = TCP4ServerEndpoint(reactor, cfg.SERVER_PORT, interface='')
-    endpoint.listen(ServerFactory(Service()))
-    reactor.run()
+    Server(Service(), cfg.SERVER_PORT).run()

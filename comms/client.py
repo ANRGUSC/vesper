@@ -1,12 +1,16 @@
-import config as cfg
 import cPickle as pickle
-
-from myobject import MyObject
 
 from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.internet.protocol import Protocol
 from twisted.protocols.basic import NetstringReceiver
 from twisted.internet import reactor
+
+import sys
+sys.path.append('../')
+
+import config as cfg
+from myobject import MyObject
+
 
 class ClientProtocol(MyObject, NetstringReceiver):
     """Client protocol for Twisted framework."""
@@ -30,7 +34,7 @@ class ClientProtocol(MyObject, NetstringReceiver):
 
     def connectionLost(self, reason):
         self.log().info('connection lost: %s', reason)
-        self.client.connection_lost(self)
+        self.client.disconnected(self)
         return
 
     def send(self, data):
@@ -67,16 +71,26 @@ class ClientProtocolFactory(MyObject, ReconnectingClientFactory):
         return
 
 
+class Client():
+
+    def __init__(self, service_client, host, port):
+        reactor.connectTCP(cfg.SERVER_HOST, cfg.SERVER_PORT,
+                           ClientProtocolFactory(service_client))
+
+    def run(self):
+        reactor.run()
+
+
 if __name__ == '__main__':
     import copy
     import logging.config
 
     mylogcfg = copy.deepcopy(cfg.LOGCFG)
-    mylogcfg['handlers']['file']['filename'] = 'server_output.log'
+    mylogcfg['handlers']['file']['filename'] = 'client_output.log'
 
     logging.config.dictConfig(mylogcfg)
 
-    class Client(MyObject):
+    class ServiceClient(MyObject):
 
         def connected(self, protocol):
             self.log().info('connected()')
@@ -86,9 +100,7 @@ if __name__ == '__main__':
 
             reactor.callFromThread(protocol.send, 'Hi')
 
-        def connection_lost(self, protocol):
-            self.log().info('connection_lost()')
+        def disconnected(self, protocol):
+            self.log().info('disconnected()')
 
-    reactor.connectTCP(cfg.SERVER_HOST, cfg.SERVER_PORT,
-                       ClientProtocolFactory(Client()))
-    reactor.run()
+    Client(ServiceClient(), cfg.SERVER_HOST, cfg.SERVER_PORT).run()
