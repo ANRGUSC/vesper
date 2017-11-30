@@ -37,16 +37,18 @@ class ServerProtocol(MyObject, NetstringReceiver, TimeoutMixin):
         return
 
     def connectionLost(self, reason):
-        self.log().info('connection lost: %s', reason)
+        self.log().info('connection lost: %s', reason.getErrorMessage())
         self.service.disconnected(self)
         return
 
     def timeoutConnection(self):
+        self.log().info('connection timeout')
         self.transport.abortConnection()
         return
 
     def send(self, data):
         message = pickle.dumps(data, pickle.HIGHEST_PROTOCOL)
+        self.log().debug('sending %s (%d bytes)', data, len(message))
         self.sendString(message)
 
 
@@ -73,6 +75,9 @@ class Server():
 
     def run(self):
         reactor.run()
+
+    def stop(self):
+        reactor.callFromThread(reactor.stop)
 
 
 if __name__ == '__main__':

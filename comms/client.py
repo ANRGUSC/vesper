@@ -33,12 +33,13 @@ class ClientProtocol(MyObject, NetstringReceiver):
         return
 
     def connectionLost(self, reason):
-        self.log().info('connection lost: %s', reason)
+        self.log().info('connection lost: %s', reason.getErrorMessage())
         self.client.disconnected(self)
         return
 
     def send(self, data):
         message = pickle.dumps(data, pickle.HIGHEST_PROTOCOL)
+        self.log().debug('sending %s (%d bytes)', data, len(message))
         self.sendString(message)
 
 
@@ -59,13 +60,13 @@ class ClientProtocolFactory(MyObject, ReconnectingClientFactory):
         return self.protocol(self)
 
     def clientConnectionLost(self, connector, reason):
-        self.log().info('connect lost: %s', reason)
+        #self.log().info('connection lost: %s', reason.getErrorMessage())
         ReconnectingClientFactory.clientConnectionLost(self, connector,
                                                          reason)
         return
 
     def clientConnectionFailed(self, connector, reason):
-        self.log().warn('connect failed: %s', reason)
+        self.log().warn('connection failed: %s', reason.getErrorMessage())
         ReconnectingClientFactory.clientConnectionFailed(self, connector,
                                                          reason)
         return
@@ -79,6 +80,9 @@ class Client():
 
     def run(self):
         reactor.run()
+
+    def stop(self):
+        reactor.callFromThread(reactor.stop)
 
 
 if __name__ == '__main__':
