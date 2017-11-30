@@ -33,6 +33,10 @@ class ClientProtocol(MyObject, NetstringReceiver):
         self.client.connection_lost(self)
         return
 
+    def send(self, data):
+        message = pickle.dumps(data, pickle.HIGHEST_PROTOCOL)
+        self.sendString(message)
+
 
 class ClientProtocolFactory(MyObject, ReconnectingClientFactory):
     """Protocol factory for Twisted framework."""
@@ -80,8 +84,7 @@ if __name__ == '__main__':
         def handle(self, protocol, message):
             self.log().debug('handling message: %s', message)
 
-            message = pickle.dumps('Hi', pickle.HIGHEST_PROTOCOL)
-            reactor.callFromThread(protocol.sendString, message)
+            reactor.callFromThread(protocol.send, 'Hi')
 
         def connection_lost(self, protocol):
             self.log().info('connection_lost()')

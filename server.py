@@ -41,6 +41,10 @@ class ServerProtocol(MyObject, NetstringReceiver, TimeoutMixin):
         self.transport.abortConnection()
         return
 
+    def send(self, data):
+        message = pickle.dumps(data, pickle.HIGHEST_PROTOCOL)
+        self.sendString(message)
+
 
 class ServerFactory(MyObject, Factory):
     """Server protocol factory for Twisted framework."""
@@ -70,8 +74,7 @@ if __name__ == '__main__':
         def connected(self, protocol):
             self.log().info('connected()')
 
-            message = pickle.dumps('Hello', pickle.HIGHEST_PROTOCOL)
-            reactor.callFromThread(protocol.sendString, message)
+            reactor.callFromThread(protocol.send, 'Hello')
 
         def handle(self, protocol, message):
             self.log().debug('handling message: %s', message)
