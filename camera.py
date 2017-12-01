@@ -28,21 +28,24 @@ class Camera(MyObject, threading.Thread):
 
         self.running = threading.Event()
         self.ready = threading.Event()
+        return
 
     def start(self):
         self.log().debug('starting camera')
+
+        self.running.set()
 
         self.grabber = threading.Thread(name='Camera.grabber',
                                         target=self.frame_grabber)
         self.grabber.start()
 
-        self.running.set()
         threading.Thread.start(self)
         return
 
     def stop(self):
         self.log().debug('stopping camera')
         self.running.clear()
+        self.grabber = None
         return
 
     def frame_grabber(self):
@@ -66,7 +69,6 @@ class Camera(MyObject, threading.Thread):
 
         capture.release()
         self.log().debug('frame grabber stopping')
-        self.stop()
         return
 
     def run(self):
