@@ -3,9 +3,9 @@
 
 import config as cfg
 
-from comms import Client
-from message import Message
-from service import Service
+from network import Client
+from common import Message
+from common import Service
 
 
 class Drone(Service):

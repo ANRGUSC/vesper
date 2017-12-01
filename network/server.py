@@ -10,7 +10,8 @@ import sys
 sys.path.append('../')
 
 import config as cfg
-from myobject import MyObject
+
+from common import MyObject
 
 
 class ServerProtocol(MyObject, NetstringReceiver, TimeoutMixin):

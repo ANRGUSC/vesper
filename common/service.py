@@ -1,6 +1,6 @@
 import collections
 
-from myobject import MyObject
+from common import MyObject
 
 class Service(MyObject):
     """Base class for Services."""

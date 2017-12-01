@@ -7,7 +7,7 @@ import time
 
 import config as cfg
 
-from myobject import MyObject
+from common import MyObject
 
 
 class Camera(MyObject, threading.Thread):
@@ -95,6 +95,7 @@ class Camera(MyObject, threading.Thread):
 
         self.running.clear()
         return
+
 
 if __name__ == '__main__':
     import copy

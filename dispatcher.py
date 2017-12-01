@@ -3,9 +3,9 @@
 
 import config as cfg
 
-from comms import Server
-from message import Message
-from service import Service
+from network import Server
+from common import Message
+from common import Service
 
 
 class Dispatcher(Service):
