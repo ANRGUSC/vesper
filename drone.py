@@ -10,12 +10,12 @@ from service import Service
 
 class Drone(Service):
     """Handles communication between the drone and the dispatcher."""
-    #Client(ServiceClient(), cfg.SERVER_HOST, cfg.SERVER_PORT).run()
 
     def __init__(self):
         Service.__init__(self, 'drone')
 
         self.client = Client(self, cfg.SERVER_HOST, cfg.SERVER_PORT)
+        self.protocol = None
         return
 
     def start(self):

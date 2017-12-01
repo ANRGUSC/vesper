@@ -4,6 +4,9 @@ SERVER_PORT = 12345
 
 MAX_DATA_SIZE = 1e6
 
+# Camera settings
+IMAGE_COMPRESSION = 50
+
 # Logging
 LOGCFG = {
     'version': 1,
