@@ -41,7 +41,7 @@ class ClientProtocol(MyObject, NetstringReceiver):
     def send(self, data):
         message = pickle.dumps(data, pickle.HIGHEST_PROTOCOL)
         self.log().debug('sending %s (%d bytes)', data, len(message))
-        reactor.callLater(0, self.sendString, message)
+        reactor.callFromThread(self.sendString, message)
 
 
 class ClientProtocolFactory(MyObject, ReconnectingClientFactory):
