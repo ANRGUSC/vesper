@@ -22,8 +22,12 @@ class Dispatcher(Service):
         self.server = Server(self, cfg.SERVER_PORT)
         self.protocols = {}
 
-        self.dashboard = Dashboard()
-        self.dashboard.start()
+        if True:
+            self.dashboard = Dashboard()
+            self.dashboard.start()
+
+        else:
+            self.dashboard = None
 
         self.controller = controller
         self.controller.dashboard = self.dashboard
@@ -46,7 +50,7 @@ class Dispatcher(Service):
     def handle_image(self, protocol, msg):
         """Handles images."""
 
-        if not self.dashboard is None:
+        if self.dashboard:
             image = cv2.imdecode(msg.data, cv2.IMREAD_UNCHANGED)
             self.dashboard.put_image(image)
 
@@ -56,30 +60,24 @@ class Dispatcher(Service):
     def start(self):
         """Starts the dispatcher server."""
         self.log().info('starting dispatcher')
-        self.start_controller()
+
+        if self.controller:
+            self.controller.start()
+
         self.server.run()   # Blocking call
         return
 
     def stop(self):
         """Stops the dispatcher server."""
         self.log().info('stopping dispatcher')
-        self.dashboard.stop()
-        self.stop_controller()
-        self.server.stop()
-        return
 
-    def start_controller(self):
-        """Starts the controller."""
-        if self.controller:
-            self.controller.start()
+        if self.dashboard:
+            self.dashboard.stop()
 
-        return
-
-    def stop_controller(self):
-        """Stops the controller."""
         if self.controller:
             self.controller.stop()
 
+        self.server.stop()
         return
 
     def disconnected(self, protocol):
