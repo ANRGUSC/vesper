@@ -17,7 +17,7 @@ class Service(MyObject):
 
     def default_handler(self, protocol, message):
         """Default message handler."""
-        self.log().warn('unhandled message: %s', message)
+        self.log().warn('UNKNOWN MESSAGE: %s', message)
         return
 
     def connected(self, protocol):
