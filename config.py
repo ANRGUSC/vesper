@@ -7,6 +7,11 @@ MAX_DATA_SIZE = 1e6
 # Camera settings
 IMAGE_COMPRESSION = 50
 
+# Dashboard settings
+DASH_IMAGE_WIDTH  = 640
+DASH_IMAGE_HEIGHT = 480
+DASH_REFRESH_RATE = 10
+
 # Logging
 LOGCFG = {
     'version': 1,
