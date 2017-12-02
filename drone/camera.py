@@ -1,6 +1,8 @@
 import cv2
+import thread
 import threading
 import time
+import traceback
 
 import sys
 sys.path.append('../')
@@ -50,52 +52,65 @@ class Camera(MyObject, threading.Thread):
 
     def frame_grabber(self):
         self.log().debug('frame grabber starting')
-        capture = cv2.VideoCapture(self.source)
 
-        while self.running.is_set():
-            if not capture.isOpened():
-                self.log().error('capture not open')
-                break
+        try:
+            capture = cv2.VideoCapture(self.source)
 
-            status, image = capture.read()
-            if not status:
-                self.log().error('could not capture image')
-                break
+            while self.running.is_set():
+                if not capture.isOpened():
+                    self.log().error('capture not open')
+                    break
 
-            with self.lock:
-                self.image = image
+                status, image = capture.read()
+                if not status:
+                    self.log().error('could not capture image')
+                    break
 
-            self.ready.set()
+                with self.lock:
+                    self.image = image
 
-        capture.release()
+                self.ready.set()
+
+            capture.release()
+
+        except:
+            self.log().error(traceback.format_exc())
+            thread.interrupt_main()
+
         self.log().debug('frame grabber stopping')
         return
 
     def run(self):
-        params = [cv2.IMWRITE_JPEG_QUALITY, self.compression]
+        try:
+            params = [cv2.IMWRITE_JPEG_QUALITY, self.compression]
 
-        while self.running.is_set():
-            self.ready.wait(self.WAIT_TIMEOUT)
-            if not self.ready.is_set():
-                continue
+            while self.running.is_set():
+                self.ready.wait(self.WAIT_TIMEOUT)
+                if not self.ready.is_set():
+                    continue
 
-            with self.lock:
-                image = self.image
-                self.image = None
+                with self.lock:
+                    image = self.image
+                    self.image = None
 
-            self.ready.clear()
+                self.ready.clear()
 
-            if self.callback:
-                ret, image_data = cv2.imencode('.jpg', image, params)
-                if not ret:
-                    self.log().error('could not compress image')
-                    break
+                if self.callback:
+                    ret, image_data = cv2.imencode('.jpg', image, params)
+                    if not ret:
+                        self.log().error('could not compress image')
+                        break
 
-                self.callback(image_data)
+                    self.callback(image_data)
 
-            time.sleep(1.0/self.frame_rate)
+                time.sleep(1.0/self.frame_rate)
 
-        self.running.clear()
+            self.running.clear()
+
+        except:
+            self.log().error(traceback.format_exc())
+            thread.interrupt_main()
+
         return
 
 

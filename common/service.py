@@ -1,4 +1,6 @@
 import collections
+import thread
+import traceback
 
 from common import MyObject
 
@@ -28,7 +30,14 @@ class Service(MyObject):
     def handle(self, protocol, message):
         """Routes message to its corresponding handler."""
         self.log().debug('handling %s', message)
-        self.handlers[message.type](protocol, message)
+
+        try:
+            self.handlers[message.type](protocol, message)
+
+        except:
+            self.log().error(traceback.format_exc())
+            thread.interrupt_main()
+
         return
 
     def disconnected(self, protocol):
