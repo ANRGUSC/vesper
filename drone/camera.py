@@ -2,8 +2,8 @@ import cv2
 import threading
 import time
 
-#import sys
-#sys.path.append('../')
+import sys
+sys.path.append('../')
 
 import config as cfg
 
