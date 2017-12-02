@@ -20,7 +20,7 @@ class Camera(MyObject, threading.Thread):
         self.callback = callback
         self.source = source
 
-        self.frame_rate = 1.0
+        self.frame_rate = 30.0
         self.compression = cfg.IMAGE_COMPRESSION
 
         self.image = None

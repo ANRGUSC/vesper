@@ -13,7 +13,9 @@ class Dispatcher(Service):
 
     def __init__(self, controller=None):
         Service.__init__(self, 'dispatcher')
+
         self.controller = controller
+        self.controller.dispatcher = self
 
         self.handlers[Message.TYPE_LOGIN] = self.handle_login
 
@@ -53,10 +55,14 @@ class Dispatcher(Service):
         if self.controller:
             self.controller.start()
 
+        return
+
     def stop_controller(self):
         """Stops the controller."""
         if self.controller:
             self.controller.stop()
+
+        return
 
     def disconnected(self, protocol):
         """Handles device disconnections."""
@@ -66,6 +72,19 @@ class Dispatcher(Service):
 
         if not self.controller is None:
             self.controller.logoff(name)
+
+        return
+
+    def send_params(self, name, params):
+        """Sends settings to 'name' client."""
+
+        protocol = self.protocols.get(name)
+        if not protocol is None:
+            msg = Message(self.name, Message.TYPE_PARAMS, params)
+            protocol.send(msg)
+
+        else:
+            self.log().warn("protocol '%s' not found", name)
 
         return
 

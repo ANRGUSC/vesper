@@ -11,6 +11,7 @@ class Controller(MyObject, threading.Thread):
 
     def __init__(self, name='Controller'):
         threading.Thread.__init__(self, name=name)
+        self.dispatcher = None
         return
 
     def start(self):
@@ -25,14 +26,24 @@ class Controller(MyObject, threading.Thread):
         return
 
     def run(self):
+        """Thread target."""
         self.log().info('running controller')
         #raise NotImplementedError
         return
 
     def logon(self, name):
+        """Handles device logon."""
         self.log().info("'%s' logged on", name)
         return
 
     def logoff(self, name):
+        """Handles device logoff."""
         self.log().info("'%s' logged off", name)
+        return
+
+    def send_params(self, name, params):
+        """Sends parameters."""
+        if not self.dispatcher is None:
+            self.dispatcher.send_params(name, params)
+
         return

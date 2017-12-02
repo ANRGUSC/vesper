@@ -17,8 +17,12 @@ class Drone(Service):
         self.camera_factory = camera_factory
         self.camera = None
 
+        self.handlers[Message.TYPE_PARAMS] = self.handle_params
+
         self.client = Client(self, cfg.SERVER_HOST, cfg.SERVER_PORT)
         self.protocol = None
+
+        self.frame_rate = 1.0
         return
 
     def start(self):
@@ -33,9 +37,9 @@ class Drone(Service):
 
     def start_camera(self):
         """Start capturing images."""
-        if self.camera_factory:
-            self.camera = self.camera_factory()
-            self.camera.callback = self.send_image
+        if (self.camera is None) and (not self.camera_factory is None):
+            self.camera = self.camera_factory(self.send_image)
+            self.camera.frame_rate = self.frame_rate
             self.camera.start()
 
         return
@@ -75,6 +79,38 @@ class Drone(Service):
         #self.log().debug('sending image')
         msg = Message(self.name, Message.TYPE_IMAGE, image_data)
         self.send(msg)
+        return
+
+    def handle_params(self, protocol, message):
+        """Handles param messages."""
+        self.log().info("received params from '%s': %s", message.name,
+                        message.data)
+
+        params = message.data
+        for p in params:
+            self.configure_param(p)
+
+        return
+
+    def configure_param(self, param):
+        """Processes a parameter."""
+        self.log().debug(param)
+
+        if param[0] == 'frame_rate':
+            self.frame_rate = param[1]
+
+            if not self.camera is None:
+                print 'SETSETSET'
+                self.camera.frame_rate = self.frame_rate
+
+        if param[0] == 'camera':
+            if param[1]:
+                self.start_camera()
+
+            else:
+                self.stop_camera()
+
+
         return
 
 
