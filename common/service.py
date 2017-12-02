@@ -23,7 +23,6 @@ class Service(MyObject):
     def connected(self, protocol):
         """Handles successful connection."""
         self.log().debug('connected')
-        #self.protocol = protocol
         return
 
     def handle(self, protocol, message):
@@ -35,5 +34,4 @@ class Service(MyObject):
     def disconnected(self, protocol):
         """Handles connection loss."""
         self.log().debug('disconnected')
-        #self.protocol = None
         return
