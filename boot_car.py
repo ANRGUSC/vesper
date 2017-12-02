@@ -6,6 +6,7 @@ import logging.config
 import config as cfg
 
 from car import Dispatcher
+from common import Controller
 
 if __name__ == '__main__':
     # Logging setup
@@ -15,7 +16,8 @@ if __name__ == '__main__':
 
     log = logging.getLogger('boot_car')
 
-    dispatcher = Dispatcher(None)
+    dispatcher = Dispatcher(Controller())
 
     log.info('booting car...')
     dispatcher.start()
+    dispatcher.stop()

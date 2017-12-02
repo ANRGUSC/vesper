@@ -24,33 +24,48 @@ class Dispatcher(Service):
     def handle_login(self, protocol, msg):
         """Handles device logins."""
         name = msg.name
-        self.log().info("'%s' logged in", name)
+        self.log().info("'%s' login", name)
 
         protocol.name = name
         self.protocols[name] = protocol
 
-        if not controller is None:
-            controller.logon(name)
+        if not self.controller is None:
+            self.controller.logon(name)
 
         return
 
     def start(self):
         """Starts the dispatcher server."""
+        self.log().info('starting dispatcher')
+        self.start_controller()
         self.server.run()   # Blocking call
         return
 
     def stop(self):
         """Stops the dispatcher server."""
+        self.log().info('stopping dispatcher')
+        self.stop_controller()
         self.server.stop()
         return
 
+    def start_controller(self):
+        """Starts the controller."""
+        if self.controller:
+            self.controller.start()
+
+    def stop_controller(self):
+        """Stops the controller."""
+        if self.controller:
+            self.controller.stop()
+
     def disconnected(self, protocol):
         """Handles device disconnections."""
-        del self.protocols[protocol.name]
-        self.log().info("'%s' disconnected", protocol.name)
+        name = protocol.name
+        del self.protocols[name]
+        self.log().info("'%s' disconnected", name)
 
-        if not controller is None:
-            controller.logoff(name)
+        if not self.controller is None:
+            self.controller.logoff(name)
 
         return
 

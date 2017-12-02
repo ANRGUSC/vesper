@@ -31,7 +31,7 @@ class Camera(MyObject, threading.Thread):
         return
 
     def start(self):
-        self.log().debug('starting camera')
+        self.log().info('starting camera')
 
         self.running.set()
 
@@ -43,7 +43,7 @@ class Camera(MyObject, threading.Thread):
         return
 
     def stop(self):
-        self.log().debug('stopping camera')
+        self.log().info('stopping camera')
         self.running.clear()
         self.grabber = None
         return
