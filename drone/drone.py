@@ -100,7 +100,6 @@ class Drone(Service):
             self.frame_rate = param[1]
 
             if not self.camera is None:
-                print 'SETSETSET'
                 self.camera.frame_rate = self.frame_rate
 
         if param[0] == 'camera':

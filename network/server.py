@@ -50,7 +50,7 @@ class ServerProtocol(MyObject, NetstringReceiver, TimeoutMixin):
     def send(self, data):
         message = pickle.dumps(data, pickle.HIGHEST_PROTOCOL)
         self.log().debug('sending %s (%d bytes)', data, len(message))
-        reactor.callFromThread(self.sendString, message)
+        reactor.callFromThread(reactor.callLater, 0, self.sendString, message)
 
 
 class ServerFactory(MyObject, Factory):
