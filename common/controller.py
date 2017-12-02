@@ -11,6 +11,7 @@ class Controller(MyObject, threading.Thread):
 
     def __init__(self, name='Controller'):
         threading.Thread.__init__(self, name=name)
+        self.dashboard = None
         self.dispatcher = None
         return
 

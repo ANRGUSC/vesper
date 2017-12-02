@@ -1,12 +1,14 @@
+import cv2
+
 import sys
 sys.path.append('../')
 
 import config as cfg
 
-from network import Server
+from car import Dashboard
 from common import Message
 from common import Service
-
+from network import Server
 
 class Dispatcher(Service):
     """Handles communication from drone and devices."""
@@ -14,13 +16,18 @@ class Dispatcher(Service):
     def __init__(self, controller=None):
         Service.__init__(self, 'dispatcher')
 
-        self.controller = controller
-        self.controller.dispatcher = self
-
         self.handlers[Message.TYPE_LOGIN] = self.handle_login
+        self.handlers[Message.TYPE_IMAGE] = self.handle_image
 
         self.server = Server(self, cfg.SERVER_PORT)
         self.protocols = {}
+
+        self.dashboard = Dashboard()
+        self.dashboard.start()
+
+        self.controller = controller
+        self.controller.dashboard = self.dashboard
+        self.controller.dispatcher = self
         return
 
     def handle_login(self, protocol, msg):
@@ -36,6 +43,16 @@ class Dispatcher(Service):
 
         return
 
+    def handle_image(self, protocol, msg):
+        """Handles images."""
+
+        if not self.dashboard is None:
+            image = cv2.imdecode(msg.data, cv2.IMREAD_UNCHANGED)
+            self.dashboard.put_image(image)
+
+        #controller
+        return
+
     def start(self):
         """Starts the dispatcher server."""
         self.log().info('starting dispatcher')
@@ -46,6 +63,7 @@ class Dispatcher(Service):
     def stop(self):
         """Stops the dispatcher server."""
         self.log().info('stopping dispatcher')
+        self.dashboard.stop()
         self.stop_controller()
         self.server.stop()
         return
