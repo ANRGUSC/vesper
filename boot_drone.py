@@ -11,6 +11,7 @@ from drone import Drone
 if __name__ == '__main__':
     # Logging setup
     mylogcfg = copy.deepcopy(cfg.LOGCFG)
+    mylogcfg['handlers']['default']['level'] = 'INFO'
     mylogcfg['handlers']['file']['filename'] = 'drone_output.log'
     logging.config.dictConfig(mylogcfg)
 
