@@ -7,11 +7,14 @@ import config as cfg
 
 from car import Dashboard
 from common import Message
+from common import Monitor
 from common import Service
 from network import Server
 
 class Dispatcher(Service):
     """Handles communication from drone and devices."""
+
+    ITEM_FPS = 'FPS'
 
     def __init__(self, controller=None):
         Service.__init__(self, 'dispatcher')
@@ -28,6 +31,9 @@ class Dispatcher(Service):
 
         else:
             self.dashboard = None
+
+        self.monitor = Monitor(self.process_measurements, cfg.MEASURE_PERIOD)
+        self.monitor.register_item(self.ITEM_FPS, Monitor.ITEM_RATE)
 
         self.controller = controller
         self.controller.dashboard = self.dashboard
@@ -50,6 +56,9 @@ class Dispatcher(Service):
     def handle_image(self, protocol, msg):
         """Handles images."""
 
+        if self.monitor:
+            self.monitor.update_item(self.ITEM_FPS, 1)
+
         if self.dashboard:
             image = cv2.imdecode(msg.data, cv2.IMREAD_UNCHANGED)
             self.dashboard.put_image(image)
@@ -57,9 +66,21 @@ class Dispatcher(Service):
         #controller
         return
 
+    def process_measurements(self, values):
+        """Handles measurements from a Monitor."""
+        self.log().info('measurements: %s', values)
+
+        if self.dashboard:
+            self.dashboard.put_values(values)
+
+        return
+
     def start(self):
         """Starts the dispatcher server."""
         self.log().info('starting dispatcher')
+
+        if self.monitor:
+            self.monitor.start()
 
         if self.controller:
             self.controller.start()
@@ -70,6 +91,9 @@ class Dispatcher(Service):
     def stop(self):
         """Stops the dispatcher server."""
         self.log().info('stopping dispatcher')
+
+        if self.monitor:
+            self.monitor.stop()
 
         if self.dashboard:
             self.dashboard.stop()

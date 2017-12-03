@@ -33,13 +33,13 @@ class Dashboard(MyObject):
         self.master.protocol("WM_DELETE_WINDOW", self.exit)
 
         self.frame = Tk.Frame(master)
-        self.frame.pack()
+        self.frame.grid(row=0, column=0, stick=Tk.N)
 
         # Canvas widget
         self.canvas = Tk.Canvas(self.frame,
                                 width=cfg.DASH_IMAGE_WIDTH,
                                 height=cfg.DASH_IMAGE_HEIGHT)
-        self.canvas.pack()
+        self.canvas.grid()
 
         # Prepare items on the canvas
         self.canvas_image = self.canvas.create_image(0, 0, anchor=Tk.NW)
@@ -48,16 +48,17 @@ class Dashboard(MyObject):
         #self.canvas_status = self.canvas.create_text(1, 1, anchor=Tk.NW,
         #                                             font=font, fill='green')
 
+        self.listbox = Tk.Listbox(master)
+        self.listbox.grid(row=0, column=1, sticky=Tk.N)
+
         # Dashboard state
         self.running = threading.Event()
-
-        #self.fps = 0.0
-        #self.fps_monitor = Monitor(self.fps_update, self.STATUS_UPDATE_PERIOD)
 
         # OpenCV image to display on Canvas
         self.image = None
         self.new_image = False
 
+        self.values = {}
         return
 
     def start(self):
@@ -88,9 +89,10 @@ class Dashboard(MyObject):
         if not self.running.is_set():
             return
 
-        # Update FPS
-        #fps = 'FPS: %.1f' % self.fps
-        #self.canvas.itemconfig(self.canvas_status, text=fps)
+        # Refresh values in listbox
+        self.listbox.delete(0, Tk.END)
+        for key, value in sorted(self.values.iteritems()):
+            self.listbox.insert(Tk.END, '%s: %s' % (key, value))
 
         # Refresh image if a new one is available
         if self.new_image:
@@ -120,5 +122,8 @@ class Dashboard(MyObject):
     def put_image(self, image):
         self.image = image
         self.new_image = True
+        return
 
-        #self.fps_monitor.increment()
+    def put_values(self, values):
+        self.values = values
+        return
