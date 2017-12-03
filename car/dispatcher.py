@@ -11,6 +11,7 @@ from common import Monitor
 from common import Service
 from network import Server
 
+
 class Dispatcher(Service):
     """Handles communication from drone and devices."""
 
@@ -69,6 +70,12 @@ class Dispatcher(Service):
     def process_measurements(self, values):
         """Handles measurements from a Monitor."""
         self.log().debug('measurements: %s', values)
+
+        if self.controller:
+            self.controller.put_metrics(values)
+
+            cvalues = self.controller.get_values()
+            values.update(cvalues)
 
         if self.dashboard:
             self.dashboard.put_values(values)

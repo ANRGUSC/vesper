@@ -48,3 +48,7 @@ class Controller(MyObject, threading.Thread):
             self.dispatcher.send_params(name, params)
 
         return
+
+    def get_values(self):
+        """Retrieves controller's data."""
+        return {}

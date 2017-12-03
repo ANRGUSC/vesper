@@ -1,3 +1,9 @@
+"""System configuration."""
+
+# Constraints
+T_o = 1     # Throughput (FPS)
+M_o = 1     # Makespan (s)
+
 # Server Parameters
 SERVER_HOST = 'localhost'
 SERVER_PORT = 12345
