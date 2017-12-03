@@ -1,7 +1,7 @@
 import threading
 import time
 
-from item import RateItem
+from item import RateItem, AvgItem
 from myobject import MyObject
 
 
@@ -71,14 +71,17 @@ class Monitor(MyObject, threading.Thread):
             item = RateItem()
 
         elif item_type == self.ITEM_AVG:
-            item = AvgItem(param)
+            if param:
+                item = AvgItem(param)
+            else:
+                item = AvgItem()
 
         else:
             self.log().warning('unknown item type: %s', item_type)
 
         with self.lock:
             self.register[name] = item
-            self.values[name] = item.get()
+            self.values[name] = 0.0
 
         return
 
@@ -130,6 +133,11 @@ if __name__ == '__main__':
             m.stop()
 
     m = Monitor(my_callback)
-    m.register_item('test', Monitor.ITEM_RATE)
-    m.update_item('test', 5)
+    m.register_item('test_rate', Monitor.ITEM_RATE)
+    m.register_item('test_avg', Monitor.ITEM_AVG, 0.5)
+
+    m.update_item('test_rate', 5)
+    m.update_item('test_avg', 6)
+    m.update_item('test_avg', 10)
+
     m.start()
