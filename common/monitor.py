@@ -23,6 +23,8 @@ class Monitor(MyObject, threading.Thread):
         self.values = {}
 
         self.lock = threading.Lock()
+
+        self.log().debug('period: %s', self.period)
         return
 
     def start(self):
@@ -60,7 +62,7 @@ class Monitor(MyObject, threading.Thread):
 
     def register_item(self, name, item_type, param=None):
         """Registers a new item for monitoring."""
-        self.log().debug("registering '%s' with type: %s %s",
+        self.log().debug("registering '%s' with type: %s (%s)",
                          name, item_type, param)
 
         if name in self.register:
