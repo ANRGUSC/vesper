@@ -92,7 +92,12 @@ class Dashboard(MyObject):
         # Refresh values in listbox
         self.listbox.delete(0, Tk.END)
         for key, value in sorted(self.values.iteritems()):
-            self.listbox.insert(Tk.END, '%s: %s' % (key, value))
+            if type(value) == float:
+                v = '%.5f' % value
+            else:
+                v = '%s' % value
+
+            self.listbox.insert(Tk.END, '%s: %s' % (key, v))
 
         # Refresh image if a new one is available
         if self.new_image:
