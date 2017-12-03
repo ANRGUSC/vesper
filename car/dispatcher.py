@@ -68,7 +68,7 @@ class Dispatcher(Service):
 
     def process_measurements(self, values):
         """Handles measurements from a Monitor."""
-        self.log().info('measurements: %s', values)
+        self.log().debug('measurements: %s', values)
 
         if self.dashboard:
             self.dashboard.put_values(values)

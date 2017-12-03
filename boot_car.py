@@ -11,6 +11,7 @@ from car import VesperController
 if __name__ == '__main__':
     # Logging setup
     mylogcfg = copy.deepcopy(cfg.LOGCFG)
+    mylogcfg['handlers']['default']['level'] = 'INFO'
     mylogcfg['handlers']['file']['filename'] = 'car_output.log'
     logging.config.dictConfig(mylogcfg)
 
