@@ -27,9 +27,9 @@ class Controller(MyObject, threading.Thread):
         return
 
     def run(self):
-        """Thread target."""
+        """Controller thread target."""
         self.log().info('running controller')
-        #raise NotImplementedError
+        self.log().info('controller finished')
         return
 
     def logon(self, name):
