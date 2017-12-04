@@ -64,7 +64,6 @@ class Drone(Service):
         self.protocol = protocol
 
         self.send(Message(self.name, Message.TYPE_LOGIN))
-        #self.start_camera()
         return
 
     def disconnected(self, protocol):
@@ -76,7 +75,6 @@ class Drone(Service):
 
     def send_image(self, image_data):
         """Sends JPEG-encoded images."""
-        #self.log().debug('sending image')
         msg = Message(self.name, Message.TYPE_IMAGE, image_data)
         self.send(msg)
         return
@@ -118,7 +116,7 @@ if __name__ == '__main__':
     import logging.config
 
     mylogcfg = copy.deepcopy(cfg.LOGCFG)
-    mylogcfg['handlers']['file']['filename'] = 'dispatcher_output.log'
+    mylogcfg['handlers']['file']['filename'] = '/dev/null'
 
     logging.config.dictConfig(mylogcfg)
 
