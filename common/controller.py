@@ -32,6 +32,11 @@ class Controller(MyObject, threading.Thread):
         self.log().info('controller finished')
         return
 
+    def loop(self):
+        """Controller action loop."""
+        self.log().info('controller loop')
+        return
+
     def logon(self, name):
         """Handles device logon."""
         self.log().info("'%s' logged on", name)

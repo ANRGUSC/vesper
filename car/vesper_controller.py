@@ -28,6 +28,16 @@ class VesperController(Controller):
 
         return
 
+    def start(self):
+        """Starts controller thread."""
+        Controller.start(self)
+        return
+
+    def loop(self):
+        """Controller action loop."""
+        self.log().info('controller loop')
+        return
+
     def logon(self, name):
         """Handles device logon."""
         Controller.logon(self, name)
@@ -39,11 +49,6 @@ class VesperController(Controller):
             ]
             self.send_params(name, params)
 
-        return
-
-    def start(self):
-        """Starts controller thread."""
-        Controller.start(self)
         return
 
     def put_metrics(self, metrics):

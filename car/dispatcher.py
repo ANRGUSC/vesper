@@ -33,12 +33,15 @@ class Dispatcher(Service):
         else:
             self.dashboard = None
 
-        self.monitor = Monitor(self.process_measurements, cfg.MEASURE_PERIOD)
+        measure_period = float(cfg.CONTROLLER_LOOP_TIME)/cfg.MEASURES_PER_LOOP
+        self.monitor = Monitor(self.process_measurements, measure_period)
         self.monitor.register_item(self.ITEM_FPS, Monitor.ITEM_RATE)
 
         self.controller = controller
         self.controller.dashboard = self.dashboard
         self.controller.dispatcher = self
+
+        self.sub_loop = 0
         return
 
     def handle_login(self, protocol, msg):
@@ -71,8 +74,14 @@ class Dispatcher(Service):
         """Handles measurements from a Monitor."""
         self.log().debug('measurements: %s', values)
 
+        self.sub_loop += 1
+        self.sub_loop %= cfg.MEASURES_PER_LOOP
+
         if self.controller:
             self.controller.put_metrics(values)
+
+            if self.sub_loop == 0:
+                self.controller.loop()
 
             cvalues = self.controller.get_values()
             values.update(cvalues)
