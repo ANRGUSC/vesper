@@ -33,6 +33,9 @@ class VesperController(Controller):
         self.values[self.VAL_AVG_FPS] = 0.0
 
         self.connected = set()
+        self.values['connected'] = self.connected
+
+        self.pipeline = 0
 
         return
 
@@ -63,6 +66,9 @@ class VesperController(Controller):
 
         if name == self.DRONE_NAME:
             self.set_frame_rate(self.values[self.VAL_T_0])
+
+        else:
+            self.send_pipeline(name, self.pipeline)
 
         return
 
@@ -97,4 +103,13 @@ class VesperController(Controller):
         self.send_params(self.DRONE_NAME, params)
 
         self.values[self.VAL_FRAME_RATE] = rate
+        return
+
+    def send_pipeline(self, name, pipeline):
+        """Configures device pipeline."""
+        params = [
+            ('pipeline', pipeline)
+        ]
+
+        self.send_params(name, params)
         return

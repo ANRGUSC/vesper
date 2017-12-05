@@ -19,6 +19,8 @@ class Device(Service):
 
         self.client = Client(self, cfg.SERVER_HOST, cfg.SERVER_PORT)
         self.protocol = None
+
+        self.pipeline = None
         return
 
     def start(self):
@@ -65,6 +67,10 @@ class Device(Service):
     def configure_param(self, param):
         """Processes a parameter."""
         self.log().debug(param)
+
+        if param[0] == 'pipeline':
+            self.pipeline = param[1]
+
         return
 
     def handle_job(self, protocol, message):
