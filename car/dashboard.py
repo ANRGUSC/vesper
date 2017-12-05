@@ -48,7 +48,7 @@ class Dashboard(MyObject):
         #self.canvas_status = self.canvas.create_text(1, 1, anchor=Tk.NW,
         #                                             font=font, fill='green')
 
-        self.listbox = Tk.Listbox(master)
+        self.listbox = Tk.Listbox(master, width=50)
         self.listbox.grid(row=0, column=1, sticky=Tk.N)
 
         # Dashboard state
