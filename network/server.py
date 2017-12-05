@@ -21,6 +21,7 @@ class ServerProtocol(MyObject, NetstringReceiver, TimeoutMixin):
     def __init__(self, factory):
         self.MAX_LENGTH = cfg.MAX_DATA_SIZE
 
+        self.heartbeat = task.LoopingCall(self.sendHeartbeat)
         self.service = factory.service
         return
 
@@ -29,22 +30,21 @@ class ServerProtocol(MyObject, NetstringReceiver, TimeoutMixin):
         self.transport.setTcpNoDelay(True)      # Disable Nagle's algorithm
 
         self.setTimeout(cfg.TIMEOUT)            # Timeout
-        lc = task.LoopingCall(self.send)        # Heartbeat
-        lc.start(0.5 * cfg.TIMEOUT)
+        self.heartbeat.start(0.5 * cfg.TIMEOUT)
 
         self.service.connected(self)
         return
 
     def stringReceived(self, data):
         self.resetTimeout()
-        message = pickle.loads(data)
 
         # Ignore heartbeats
-        if message is None:
+        if not data:
             return
 
         self.log().debug('received %d bytes', len(data))
 
+        message = pickle.loads(data)
         self.service.handle(self, message)
         return
 
@@ -58,13 +58,17 @@ class ServerProtocol(MyObject, NetstringReceiver, TimeoutMixin):
         self.transport.abortConnection()
         return
 
-    def send(self, data=None):
+    def send(self, data):
         message = pickle.dumps(data, pickle.HIGHEST_PROTOCOL)
-
-        if not data is None:    # Ignore heartbeats
-            self.log().debug('sending %s (%d bytes)', data, len(message))
-
+        self.log().debug('sending %s (%d bytes)', data, len(message))
         reactor.callFromThread(reactor.callLater, 0, self.sendString, message)
+
+        self.heartbeat.reset()
+        return
+
+    def sendHeartbeat(self):
+        reactor.callFromThread(reactor.callLater, 0, self.sendString, '')
+        return
 
 
 class ServerFactory(MyObject, Factory):
