@@ -1,9 +1,11 @@
 import cPickle as pickle
 
+from twisted.internet import reactor
+from twisted.internet import task
 from twisted.internet.protocol import ReconnectingClientFactory
 from twisted.internet.protocol import Protocol
 from twisted.protocols.basic import NetstringReceiver
-from twisted.internet import reactor
+from twisted.protocols.policies import TimeoutMixin
 
 import sys
 sys.path.append('../')
@@ -13,7 +15,7 @@ import config as cfg
 from common import MyObject
 
 
-class ClientProtocol(MyObject, NetstringReceiver):
+class ClientProtocol(MyObject, NetstringReceiver, TimeoutMixin):
     """Client protocol for Twisted framework."""
 
     def __init__(self, factory):
@@ -24,12 +26,24 @@ class ClientProtocol(MyObject, NetstringReceiver):
     def connectionMade(self):
         self.log().info('connected')
         self.transport.setTcpNoDelay(True)      # Disable Nagle's algorithm
+
+        self.setTimeout(cfg.TIMEOUT)            # Timeout
+        lc = task.LoopingCall(self.send)        # Heartbeat
+        lc.start(0.5 * cfg.TIMEOUT)
+
         self.client.connected(self)
         return
 
     def stringReceived(self, data):
-        self.log().debug('received %d bytes', len(data))
+        self.resetTimeout()
         message = pickle.loads(data)
+
+        # Ignore heartbeats
+        if message is None:
+            return
+
+        self.log().debug('received %d bytes', len(data))
+
         self.client.handle(self, message)
         return
 
@@ -38,9 +52,12 @@ class ClientProtocol(MyObject, NetstringReceiver):
         self.client.disconnected(self)
         return
 
-    def send(self, data):
+    def send(self, data=None):
         message = pickle.dumps(data, pickle.HIGHEST_PROTOCOL)
-        self.log().debug('sending %s (%d bytes)', data, len(message))
+
+        if not data is None:    # Ignore heartbeats
+            self.log().debug('sending %s (%d bytes)', data, len(message))
+
         reactor.callFromThread(reactor.callLater, 0, self.sendString, message)
 
 
