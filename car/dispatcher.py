@@ -5,11 +5,12 @@ sys.path.append('../')
 
 import config as cfg
 
-from car import Dashboard
 from common import Message
 from common import Monitor
 from common import Service
+from dashboard import Dashboard
 from network import Server
+from node import Node
 
 
 class Dispatcher(Service):
@@ -25,6 +26,8 @@ class Dispatcher(Service):
 
         self.server = Server(self, cfg.SERVER_PORT)
         self.protocols = {}
+
+        self.nodes = {}
 
         if cfg.DASHBOARD:
             self.dashboard = Dashboard()
@@ -54,6 +57,8 @@ class Dispatcher(Service):
 
         if not self.controller is None:
             self.controller.logon(name)
+
+        self.nodes[name] = Node(name)
 
         return
 
@@ -129,10 +134,11 @@ class Dispatcher(Service):
         if not self.controller is None:
             self.controller.logoff(name)
 
+        del self.nodes[name]
         return
 
     def send_params(self, name, params):
-        """Sends settings to 'name' client."""
+        """Sends settings to client."""
 
         protocol = self.protocols.get(name)
         if not protocol is None:
