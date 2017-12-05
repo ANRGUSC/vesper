@@ -50,6 +50,8 @@ class ClientProtocol(MyObject, NetstringReceiver, TimeoutMixin):
 
     def connectionLost(self, reason):
         self.log().info('connection lost: %s', reason.getErrorMessage())
+        self.setTimeout(None)
+        self.heartbeat.stop()
         self.client.disconnected(self)
         return
 
