@@ -100,7 +100,7 @@ class Drone(Service):
             if not self.camera is None:
                 self.camera.frame_rate = self.frame_rate
 
-        if param[0] == 'camera':
+        elif param[0] == 'camera':
             if param[1]:
                 self.start_camera()
 
