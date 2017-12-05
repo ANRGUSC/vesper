@@ -26,7 +26,7 @@ class Dispatcher(Service):
         self.server = Server(self, cfg.SERVER_PORT)
         self.protocols = {}
 
-        if True:
+        if cfg.DASHBOARD:
             self.dashboard = Dashboard()
             self.dashboard.start()
 
@@ -67,7 +67,7 @@ class Dispatcher(Service):
             image = cv2.imdecode(msg.data, cv2.IMREAD_UNCHANGED)
             self.dashboard.put_image(image)
 
-        #controller
+        #imagebuf
         return
 
     def process_measurements(self, values):

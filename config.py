@@ -14,6 +14,8 @@ TIMEOUT = 1     # Seconds
 CONTROLLER_LOOP_TIME = 6
 MEASURES_PER_LOOP    = 3
 
+DASHBOARD = True
+
 # Camera settings
 IMAGE_COMPRESSION = 50
 
