@@ -10,6 +10,8 @@ class Job(MyObject):
         self.data = data
         self.probe = probe
 
+        self.deadline = 0.0
+
         # End-to-end time (dispatcher)
         self.start = time.time()
         self.end = 0.0
@@ -28,6 +30,8 @@ class Job(MyObject):
         s += '(%d bytes),' % (len(self.data))
 
         # Include times if set
+        if self.deadline:
+            s += ' deadline: %0.3f' % self.deadline
         if self.start:
             s += ' start: %0.3f' % self.start
         if self.end:
