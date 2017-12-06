@@ -16,4 +16,5 @@ class Node(MyObject):
         return
 
     def __repr__(self):
-        return "<Device '%s'>" % (self.name)
+        return "<Node '%s' P_RATE: %0.6f, RTT: %0.6f'>" % \
+                (self.name, self.processing_rate.get(), self.rtt.get())

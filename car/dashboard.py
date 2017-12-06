@@ -48,7 +48,7 @@ class Dashboard(MyObject):
         #self.canvas_status = self.canvas.create_text(1, 1, anchor=Tk.NW,
         #                                             font=font, fill='green')
 
-        self.listbox = Tk.Listbox(master, width=50)
+        self.listbox = Tk.Listbox(master, height=25, width=50)
         self.listbox.grid(row=0, column=1, sticky=Tk.N)
 
         # Dashboard state
@@ -85,6 +85,41 @@ class Dashboard(MyObject):
         self.master.after(int(1000/cfg.DASH_REFRESH_RATE), self.update)
         return
 
+    def list_add(self, key, value, indent=0):
+        line = '  ' * indent
+
+        if type(value) == dict:
+            line += '%s: ' % (key)
+            self.listbox.insert(Tk.END, line)
+
+            for k, v in sorted(value.iteritems()):
+                self.list_add(k, v, indent+1)
+
+            return
+
+        elif type(value) == set:
+            line += '%s: ' % (key)
+            self.listbox.insert(Tk.END, line)
+
+            for v in sorted(value):
+                self.list_add(None, v, indent+1)
+
+            return
+
+        elif type(value) == float:
+            v = '%.6f' % value
+
+        else:
+            v = '%s' % value
+
+        if not key is None:
+            line += '%s: ' % (key)
+
+        line += v
+
+        self.listbox.insert(Tk.END, line)
+        return
+
     def update(self):
         if not self.running.is_set():
             return
@@ -92,12 +127,7 @@ class Dashboard(MyObject):
         # Refresh values in listbox
         self.listbox.delete(0, Tk.END)
         for key, value in sorted(self.values.iteritems()):
-            if type(value) == float:
-                v = '%.5f' % value
-            else:
-                v = '%s' % value
-
-            self.listbox.insert(Tk.END, '%s: %s' % (key, v))
+            self.list_add(key, value)
 
         # Refresh image if a new one is available
         if self.new_image:

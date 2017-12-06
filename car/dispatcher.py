@@ -150,6 +150,8 @@ class Dispatcher(Service):
             cvalues = self.controller.get_values()
             values.update(cvalues)
 
+        values['nodes'] = self.nodes
+
         if self.dashboard:
             self.dashboard.put_values(values)
 
