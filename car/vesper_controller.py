@@ -13,8 +13,6 @@ from dispatcher import Dispatcher
 
 
 class VesperController(Controller):
-    EWMA_ALPHA   = 0.8
-
     VAL_AVG_FPS = 'FPS.avg'
     VAL_FRAME_RATE = 'Frame Rate'
     VAL_T_0 = 'T_o'
@@ -28,7 +26,7 @@ class VesperController(Controller):
         Controller.__init__(self)
         self.running = threading.Event()
 
-        self.avg_fps = AvgItem(self.EWMA_ALPHA)
+        self.avg_fps = AvgItem(cfg.EWMA_ALPHA)
 
         self.metrics = {}
 
