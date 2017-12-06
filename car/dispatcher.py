@@ -1,11 +1,14 @@
 import cv2
+import numpy as np
+import Queue
+import time
 
 import sys
 sys.path.append('../')
 
 import config as cfg
 
-from common import Message
+from common import Job, Message
 from common import Monitor
 from common import Service
 from dashboard import Dashboard
@@ -23,6 +26,7 @@ class Dispatcher(Service):
 
         self.handlers[Message.TYPE_LOGIN] = self.handle_login
         self.handlers[Message.TYPE_IMAGE] = self.handle_image
+        self.handlers[Message.TYPE_RESULT] = self.handle_result
 
         self.server = Server(self, cfg.SERVER_PORT)
         self.protocols = {}
@@ -44,6 +48,15 @@ class Dispatcher(Service):
         self.controller.dashboard = self.dashboard
         self.controller.dispatcher = self
 
+        self.imagebuf = Queue.Queue()   # Buffer of encoded images
+                                        # (time stamp, image data)
+
+        # Initialize probe to blank image
+        self.probe_image = self.generate_probe_image()
+
+        self.tokens = Queue.Queue()
+        self.job_id = 0
+
         self.sub_loop = 0
         return
 
@@ -59,7 +72,7 @@ class Dispatcher(Service):
             self.controller.logon(name)
 
         self.nodes[name] = Node(name)
-
+        self.tokens.put(name)
         return
 
     def handle_image(self, protocol, msg):
@@ -72,7 +85,24 @@ class Dispatcher(Service):
             image = cv2.imdecode(msg.data, cv2.IMREAD_UNCHANGED)
             self.dashboard.put_image(image)
 
-        #imagebuf
+        self.imagebuf.put((time.time(), msg.data))
+        self.probe_image = msg.data
+        return
+
+    def handle_result(self, protocol, msg):
+        """Handles result."""
+        name = protocol.name
+
+        job = msg.data
+        job.end = time.time()
+
+        self.log().info("job %d completed by '%s'", job.job_id, name)
+        self.log().debug(job)
+
+        # TODO: Update device stats
+        node = self.nodes[name]
+
+        self.tokens.put(name)
         return
 
     def process_measurements(self, values):
@@ -146,9 +176,50 @@ class Dispatcher(Service):
             protocol.send(msg)
 
         else:
-            self.log().warn("protocol '%s' not found", name)
+            self.log().warn("send_params: protocol '%s' not found", name)
 
         return
+
+    def next_job_id(self):
+        """Returns next job id."""
+        job_id = self.job_id
+        self.job_id += 1
+        return job_id
+
+    def generate_probe_image(self):
+        """Generate random blank image for probing."""
+        # Note: Due to the randomness, this will likely be larger in (encoded)
+        # size than an image from the drone
+
+        blank = np.random.randint(0, 256, (480, 640, 3), np.uint8)
+        params = [cv2.IMWRITE_JPEG_QUALITY, 50]
+
+        ret, image_data = cv2.imencode('.jpg', blank, params)
+        if ret:
+            return image_data
+
+        else:
+            self.log().error(traceback.format_exc())
+            thread.interrupt_main()
+
+    def probe(self, name, pipeline):
+        """Sends fake job to a device to probe."""
+
+        protocol = self.protocols.get(name)
+        if protocol:
+            job = Job(self.next_job_id(), pipeline, self.probe_image, True)
+            msg = Message(self.name, Message.TYPE_JOB, job)
+
+            self.log().info("sending job %d to '%s'", job.job_id, name)
+            self.log().debug('%s', job)
+            protocol.send(msg)
+
+        else:
+            self.log().warn("probe: protocol '%s' not found", name)
+
+        return
+
+
 
 
 if __name__ == '__main__':

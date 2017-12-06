@@ -1,3 +1,6 @@
+import Queue
+import threading
+
 import sys
 sys.path.append('../')
 
@@ -10,7 +13,6 @@ from dispatcher import Dispatcher
 
 
 class VesperController(Controller):
-
     EWMA_ALPHA   = 0.8
 
     VAL_AVG_FPS = 'FPS.avg'
@@ -20,8 +22,11 @@ class VesperController(Controller):
 
     DRONE_NAME = 'drone'
 
+    QUEUE_TIMEOUT = 1.0
+
     def __init__(self):
         Controller.__init__(self)
+        self.running = threading.Event()
 
         self.avg_fps = AvgItem(self.EWMA_ALPHA)
 
@@ -39,9 +44,59 @@ class VesperController(Controller):
 
         return
 
+    def throughput_constraint(self):
+        """Returns throughput constraint."""
+        return self.values[self.VAL_T_0]
+
+    def makespan_constraint(self):
+        """Returns makespan constraint."""
+        return self.values[self.VAL_M_0]
+
     def start(self):
         """Starts controller thread."""
+        self.running.set()
         Controller.start(self)
+        return
+
+    def stop(self):
+        """Stops controller thread."""
+        self.log().info('stopping controller')
+        self.running.clear()
+        return
+
+    def run(self):
+        """Controller thread target."""
+        self.log().info('running controller')
+
+        while self.running.is_set():
+            try:
+                name = self.dispatcher.tokens.get(True, self.QUEUE_TIMEOUT)
+            except Queue.Empty:
+                continue
+
+            # TODO: Determine if device is usable
+            # If not, schedule probe
+            if True:
+                # Schedule probe
+                self.dispatcher.probe(name, self.pipeline)
+                continue
+
+            while True:
+                # TODO: queue timeout
+                timestamp, image = self.dispatcher.imagebuf.get()
+                now = time.time()
+
+                if (now - timestamp) > self.makespan_constraint():
+                    # Image has expired
+                    self.log().debug('image expired')
+                    continue
+                else:
+                    break
+
+            # TODO: Schedule job...
+
+
+        self.log().info('controller finished')
         return
 
     def loop(self):

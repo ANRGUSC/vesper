@@ -1,3 +1,6 @@
+import threading
+import time
+
 import sys
 sys.path.append('../')
 
@@ -75,7 +78,26 @@ class Device(Service):
 
     def handle_job(self, protocol, message):
         """Handles job messages."""
-        self.log().info('received job')
+        job = message.data
+        job.arrived = time.time()
+
+        self.log().info('received %s', job)
+
+        t = threading.Thread(name='worker', target=self.work, args=(job,))
+        t.start()
+        return
+
+    def work(self, job):
+        """Performs a job."""
+        time.sleep(3)
+        job.data = ' ' * 1000
+        self.send_result(job)
+        return
+
+    def send_result(self, job):
+        """Sends job result to dispatcher."""
+        job.left = time.time()
+        self.send(Message(self.name, Message.TYPE_RESULT, job))
         return
 
 
