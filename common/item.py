@@ -90,7 +90,7 @@ class AvgItem(Item):
             if self.count:
                 avg = float(self.value) / self.count
             else:
-                avg = 0.0
+                avg = self.previous
 
             if self.init:
                 value = (avg * self.param) + (self.previous * (1 - self.param))
