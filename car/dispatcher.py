@@ -1,3 +1,4 @@
+import copy
 import cv2
 import numpy as np
 import Queue
@@ -20,6 +21,7 @@ class Dispatcher(Service):
     """Handles communication from drone and devices."""
 
     ITEM_FPS = 'FPS'
+    ITEM_MAKESPAN = 'Makespan'
 
     def __init__(self, controller=None):
         Service.__init__(self, 'dispatcher')
@@ -43,6 +45,7 @@ class Dispatcher(Service):
         measure_period = float(cfg.CONTROLLER_LOOP_TIME)/cfg.MEASURES_PER_LOOP
         self.monitor = Monitor(self.process_measurements, measure_period)
         self.monitor.register_item(self.ITEM_FPS, Monitor.ITEM_RATE)
+        self.monitor.register_item(self.ITEM_MAKESPAN, Monitor.ITEM_AVG)
 
         self.controller = controller
         self.controller.dashboard = self.dashboard
@@ -71,8 +74,10 @@ class Dispatcher(Service):
         if not self.controller is None:
             self.controller.logon(name)
 
-        self.nodes[name] = Node(name)
-        self.tokens.put(name)
+        if not name == cfg.CAMERA_NAME:
+            self.nodes[name] = Node(name)
+            self.tokens.put(name)
+
         return
 
     def handle_image(self, protocol, msg):
@@ -99,8 +104,24 @@ class Dispatcher(Service):
         self.log().info("job %d completed by '%s'", job.job_id, name)
         self.log().debug(job)
 
-        # TODO: Update device stats
+        # Update system stats
+        makespan = job.end - job.start
+        proc_time = job.left - job.arrived
+        rtt = makespan - proc_time
+
+        self.log().debug('job %d makespan: %0.6f', job.job_id, makespan)
+        self.log().debug('job %d proc_time: %0.6f', job.job_id, proc_time)
+        self.log().debug('job %d rtt: %0.6f', job.job_id, rtt)
+
+        self.monitor.update_item(self.ITEM_MAKESPAN, makespan)
+        # TODO: throughput
+
+        # Update device stats
+        # Note: There are only single tokens for now, so no need for
+        # synchronization
         node = self.nodes[name]
+        #node.processing_rate.add()
+        node.rtt.add(rtt)
 
         self.tokens.put(name)
         return
