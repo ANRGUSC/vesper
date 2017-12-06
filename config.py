@@ -19,6 +19,7 @@ EWMA_ALPHA = 0.8
 DASHBOARD = True
 
 # Camera settings
+CAMERA_NAME = 'drone'
 IMAGE_COMPRESSION = 50
 
 # Dashboard settings

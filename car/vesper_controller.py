@@ -18,8 +18,6 @@ class VesperController(Controller):
     VAL_T_0 = 'T_o'
     VAL_M_0 = 'M_o'
 
-    DRONE_NAME = 'drone'
-
     QUEUE_TIMEOUT = 1.0
 
     def __init__(self):
@@ -101,7 +99,7 @@ class VesperController(Controller):
         """Controller action loop."""
         self.log().info('controller loop')
 
-        if self.DRONE_NAME in self.connected:
+        if cfg.CAMERA_NAME in self.connected:
             # Adjust frame rate
             avg_fps = self.values[self.VAL_AVG_FPS]
             t0 = self.values[self.VAL_T_0]
@@ -117,7 +115,7 @@ class VesperController(Controller):
         Controller.logon(self, name)
         self.connected.add(name)
 
-        if name == self.DRONE_NAME:
+        if name == cfg.CAMERA_NAME:
             self.set_frame_rate(self.values[self.VAL_T_0])
 
         else:
@@ -153,7 +151,7 @@ class VesperController(Controller):
             ('frame_rate', rate),
             ('camera', True)
         ]
-        self.send_params(self.DRONE_NAME, params)
+        self.send_params(cfg.CAMERA_NAME, params)
 
         self.values[self.VAL_FRAME_RATE] = rate
         return

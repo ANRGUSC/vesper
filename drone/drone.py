@@ -12,7 +12,7 @@ class Drone(Service):
     """Handles communication between the drone and the dispatcher."""
 
     def __init__(self, camera_factory=None):
-        Service.__init__(self, 'drone')
+        Service.__init__(self, cfg.CAMERA_NAME)
 
         self.camera_factory = camera_factory
         self.camera = None
