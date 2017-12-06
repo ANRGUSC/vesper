@@ -97,7 +97,13 @@ class Device(Service):
     def send_result(self, job):
         """Sends job result to dispatcher."""
         job.left = time.time()
-        self.log().info('job %d took %0.6f seconds', job.job_id, job.left - job.arrived)
+
+        if job.probe:
+            prefix = 'probe '
+        else:
+            prefix = ''
+
+        self.log().info('%sjob %d took %0.6f seconds', prefix, job.job_id, job.left - job.arrived)
         self.send(Message(self.name, Message.TYPE_RESULT, job))
         return
 

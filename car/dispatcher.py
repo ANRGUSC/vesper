@@ -109,12 +109,20 @@ class Dispatcher(Service):
         proc_time = job.left - job.arrived
         rtt = makespan - proc_time
 
-        self.log().debug('job %d makespan: %0.6f', job.job_id, makespan)
-        self.log().debug('job %d proc_time: %0.6f', job.job_id, proc_time)
-        self.log().debug('job %d rtt: %0.6f', job.job_id, rtt)
+        if job.probe:
+            prefix = 'probe '
+        else:
+            prefix = ''
 
-        self.monitor.update_item(self.ITEM_MAKESPAN, makespan)
-        # TODO: throughput
+        self.log().debug('%sjob %d makespan: %0.6f', prefix, job.job_id, makespan)
+        self.log().debug('%sjob %d proc_time: %0.6f', prefix, job.job_id, proc_time)
+        self.log().debug('%sjob %d rtt: %0.6f', prefix, job.job_id, rtt)
+
+        # TODO: Ignore probe jobs
+        #if not job.probe:
+        if True:
+            self.monitor.update_item(self.ITEM_MAKESPAN, makespan)
+            # TODO: throughput
 
         # Update device stats
         # Note: There are only single tokens for now, so no need for
