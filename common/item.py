@@ -66,14 +66,14 @@ class AvgItem(Item):
         self.param = param
 
         self.init = False
-        self.previous = 0
+        self.previous = 0.0
 
         self.reset()
         return
 
     def reset(self):
         with self.lock:
-            self.value = 0
+            self.value = 0.0
             self.count = 0
 
         return
@@ -90,7 +90,7 @@ class AvgItem(Item):
             if self.count:
                 avg = float(self.value) / self.count
             else:
-                avg = 0
+                avg = 0.0
 
             if self.init:
                 value = (avg * self.param) + (self.previous * (1 - self.param))
