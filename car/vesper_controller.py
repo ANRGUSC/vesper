@@ -98,7 +98,7 @@ class VesperController(Controller):
                     if elapsed > self.makespan_constraint():
                         # Image has expired
                         self.log().debug('image expired (%0.6f seconds old)',
-                                         now - timestamp)
+                                         elapsed)
                         continue
 
                     # Schedule job
