@@ -77,11 +77,6 @@ class Pipeline(MyObject, threading.Thread):
                     [detection_boxes, detection_scores, detection_classes, num_detections],
                     feed_dict={image_tensor: image_np_expanded})
 
-                print 'boxes', boxes.shape
-                print 'scores', scores.shape
-                print 'classes', classes.shape
-                print 'num', num.shape
-
                 job.data = (boxes, scores, classes, num)
                 self.device.send_result(job)
 
