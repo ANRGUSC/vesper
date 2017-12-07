@@ -54,6 +54,8 @@ class Dispatcher(Service):
         self.controller.dashboard = self.dashboard
         self.controller.dispatcher = self
 
+        self.dashboard.controller = controller
+
         self.imagebuf = Queue.Queue()   # Buffer of encoded images
                                         # (time stamp, image data)
 

@@ -2,6 +2,7 @@ import cv2
 import threading
 #import tkFont
 import Tkinter as Tk
+import traceback
 
 from PIL import Image
 from PIL import ImageTk
@@ -33,7 +34,7 @@ class Dashboard(MyObject):
         self.master.protocol("WM_DELETE_WINDOW", self.exit)
 
         self.frame = Tk.Frame(master)
-        self.frame.grid(row=0, column=0, stick=Tk.N)
+        self.frame.grid(row=0, column=0, stick=Tk.N, rowspan=2)
 
         # Canvas widget
         self.canvas = Tk.Canvas(self.frame,
@@ -51,6 +52,19 @@ class Dashboard(MyObject):
         self.listbox = Tk.Listbox(master, height=25, width=50)
         self.listbox.grid(row=0, column=1, sticky=Tk.N)
 
+        # Throughput/makespan entries
+        self.frame2 = Tk.Frame(master)
+        self.frame2.grid(row=1, column=1)
+
+        self.throughput_entry = self.make_entry(self.frame2, 'Throughput', 0,
+                                                '%0.1f' % cfg.T_o)
+        self.makespan_entry = self.make_entry(self.frame2, 'Makespan', 1,
+                                                '%0.1f' % cfg.M_o)
+
+        self.set_button = Tk.Button(self.frame2, text='Set Constraints',
+                                    command=self.set_constraints)
+        self.set_button.grid(row=2, column=1)
+
         # Dashboard state
         self.running = threading.Event()
 
@@ -58,8 +72,17 @@ class Dashboard(MyObject):
         self.image = None
         self.new_image = False
 
+        self.controller = None
         self.values = {}
         return
+
+    def make_entry(self, parent, caption, row, text):
+        """Creates an entry widget with label."""
+        Tk.Label(parent, text=caption).grid(row=row, column=0, sticky=Tk.E)
+        entry = Tk.Entry(parent)
+        entry.grid(row=row, column=1)
+        entry.insert(0, text)
+        return entry
 
     def start(self):
         """Starts dashboard refreshes."""
@@ -161,4 +184,23 @@ class Dashboard(MyObject):
 
     def put_values(self, values):
         self.values = values
+        return
+
+    def set_constraints(self):
+        """Sets new throughput and makespan constraints."""
+
+        try:
+            throughput = float(self.throughput_entry.get())
+            makespan = float(self.makespan_entry.get())
+
+        except ValueError:
+            self.log().warn(traceback.format_exc())
+            return
+
+        if self.controller:
+            self.log().info('setting new constraints ' \
+                            'throughput=%0.1f, makespan=%0.1f',
+                            throughput, makespan)
+            self.controller.set_constraints(throughput, makespan)
+
         return
