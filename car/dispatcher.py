@@ -134,11 +134,12 @@ class Dispatcher(Service):
         proc_rate = cfg.PIPELINES[job.pipeline][1]/proc_time
 
         # Update device stats
-        # Note: There are only single tokens for now, so no need for
-        # synchronization
         node = self.nodes[name]
-        node.processing_rate.add(proc_rate)
-        node.rtt.add(rtt)
+        with node.lock:
+            node.processing_rate.add(proc_rate)
+            node.rtt.add(rtt)
+
+        self.log().debug('node updated %s', node)
 
         self.tokens.put(name)
         return

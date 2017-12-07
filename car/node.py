@@ -1,3 +1,5 @@
+import threading
+
 import sys
 sys.path.append('../')
 
@@ -10,6 +12,7 @@ class Node(MyObject):
 
     def __init__(self, name):
         self.name = name
+        self.lock = threading.Lock()    # access lock
 
         self.processing_rate = AvgItem(cfg.EWMA_ALPHA)
         self.rtt = AvgItem(cfg.EWMA_ALPHA)

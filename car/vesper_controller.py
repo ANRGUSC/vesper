@@ -64,6 +64,35 @@ class VesperController(Controller):
         self.running.clear()
         return
 
+    def estimated_makespan(self, name):
+        """Calculates a device's estimate makespan for current pipeline."""
+        try:
+            node = self.dispatcher.nodes[name]
+        except KeyError:
+            self.log().warn("estimated_makespan: node '%s' not found", name)
+            return sys.maxint
+
+        with node.lock:
+            try:
+                makespan = cfg.PIPELINES[self.pipeline][1] / node.processing_rate.get()
+            except ZeroDivisionError:
+                return sys.maxint
+
+            makespan += node.rtt.get()
+
+        return makespan
+
+    def device_usable(self, name):
+        """Returns if device can satisfy makespan constraint."""
+        est_makespan = self.estimated_makespan(name)
+        self.log().debug("estimated makespan %0.6f for '%s' (constraint: %0.3f)",
+                         est_makespan, name, self.makespan_constraint())
+
+        if est_makespan <= self.makespan_constraint():
+            return True
+        else:
+            return False
+
     def run(self):
         """Controller thread target."""
         self.log().info('running controller')
@@ -77,8 +106,8 @@ class VesperController(Controller):
 
                 self.log().debug("got '%s' token", name)
 
-                # Check if device is scheduled, otherwise probe
-                if not name in self.scheduled:
+                # Check if device is usable, otherwise probe
+                if not self.device_usable(name):
                     # Schedule probe
                     self.dispatcher.probe(name, self.pipeline)
                     continue
