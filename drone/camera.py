@@ -83,7 +83,6 @@ class Camera(MyObject, threading.Thread):
     def run(self):
         try:
             params = [cv2.IMWRITE_JPEG_QUALITY, self.compression]
-            interval = 1.0/self.frame_rate
 
             while self.running.is_set():
                 self.ready.wait(self.WAIT_TIMEOUT)
@@ -105,7 +104,7 @@ class Camera(MyObject, threading.Thread):
 
                     self.callback(image_data)
 
-                deadline = last + interval
+                deadline = last + 1.0/self.frame_rate
                 while time.time() < deadline:
                     pass
 
