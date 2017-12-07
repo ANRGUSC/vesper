@@ -27,20 +27,21 @@ class VesperController(Controller):
         Controller.__init__(self)
         self.running = threading.Event()
 
-        self.avg_fps = AvgItem(cfg.EWMA_ALPHA)
+        self.pipeline = 0
 
+        self.avg_fps = AvgItem(cfg.EWMA_ALPHA)
         self.metrics = {}
 
         self.values = {}
         self.values[self.VAL_T_0] = cfg.T_o
         self.values[self.VAL_M_0] = cfg.M_o
         self.values[self.VAL_AVG_FPS] = 0.0
+        self.values['~pipeline'] = self.pipeline
 
         self.connected = set()
         self.values['connected'] = self.connected
 
-        self.pipeline = 0
-        self.scheduled = set()
+        self.processors = set()
 
         return
 
@@ -64,8 +65,8 @@ class VesperController(Controller):
         self.running.clear()
         return
 
-    def estimated_makespan(self, name):
-        """Calculates a device's estimate makespan for current pipeline."""
+    def estimated_makespan(self, name, pipeline):
+        """Calculates a device's estimate makespan for specified pipeline."""
         try:
             node = self.dispatcher.nodes[name]
         except KeyError:
@@ -74,7 +75,7 @@ class VesperController(Controller):
 
         with node.lock:
             try:
-                makespan = cfg.PIPELINES[self.pipeline][1] / node.processing_rate.get()
+                makespan = cfg.PIPELINES[pipeline][1] / node.processing_rate.get()
             except ZeroDivisionError:
                 return sys.maxint
 
@@ -84,7 +85,7 @@ class VesperController(Controller):
 
     def device_usable(self, name):
         """Returns if device can satisfy makespan constraint."""
-        est_makespan = self.estimated_makespan(name)
+        est_makespan = self.estimated_makespan(name, self.pipeline)
         self.log().debug("estimated makespan %0.6f for '%s' (constraint: %0.3f)",
                          est_makespan, name, self.makespan_constraint())
 
@@ -156,7 +157,38 @@ class VesperController(Controller):
             rate = bounded(t0*ratio, 0.8 * t0, 1.2 * t0)
             self.set_frame_rate(t0 * ratio)
 
-        # TODO: Adjust schedule
+        # Check pipeline options
+        pipeline = 0
+        for i in xrange(0, len(cfg.PIPELINES)):
+            self.log().debug('considering pipeline %d', i)
+            throughput = 0.0
+
+            for name in self.processors:
+                est_makespan = self.estimated_makespan(name, i)
+                if est_makespan < self.makespan_constraint():
+                    partial = 1/est_makespan
+                    throughput += partial
+                    self.log().debug("'%s' can contribute %0.3f", name, partial)
+
+            self.log().debug('throughput estimate for pipeline %d: %0.3f fps (constraint: %0.3f)',
+                             i, throughput, self.throughput_constraint())
+
+            if throughput >= self.throughput_constraint():
+                pipeline = i
+            else:
+                # Higher pipelines will be slower, so can stop here
+                if i == 0:
+                    # Not a good sign, as even lowest pipeline is too slow
+                    self.dispatcher.imagebuf = Queue.Queue()
+
+                break
+
+        if pipeline < self.pipeline:
+            # Make sure image buffer doesn't grow out of control
+            self.dispatcher.imagebuf = Queue.Queue()
+
+        self.pipeline = pipeline
+        self.log().info('selected pipeline %d', self.pipeline)
 
         return
 
@@ -167,16 +199,15 @@ class VesperController(Controller):
 
         if name == cfg.CAMERA_NAME:
             self.set_frame_rate(self.values[self.VAL_T_0])
-
         else:
-            self.scheduled.add(name)
+            self.processors.add(name)
 
         return
 
     def logoff(self, name):
         """Handles device logoff."""
         Controller.logoff(self, name)
-        self.scheduled.discard(name)
+        self.processors.discard(name)
         self.connected.discard(name)
         return
 
