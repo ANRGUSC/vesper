@@ -43,15 +43,18 @@ class VesperController(Controller):
 
         self.processors = set()
 
+        self.constraint_lock = threading.Lock()
         return
 
     def throughput_constraint(self):
         """Returns throughput constraint."""
-        return self.values[self.VAL_T_0]
+        with self.constraint_lock:
+            return self.values[self.VAL_T_0]
 
     def makespan_constraint(self):
         """Returns makespan constraint."""
-        return self.values[self.VAL_M_0]
+        with self.constraint_lock:
+            return self.values[self.VAL_M_0]
 
     def start(self):
         """Starts controller thread."""
@@ -151,11 +154,11 @@ class VesperController(Controller):
         if cfg.CAMERA_NAME in self.connected:
             # Adjust frame rate
             avg_fps = self.values[self.VAL_AVG_FPS]
-            t0 = self.values[self.VAL_T_0]
+            t0 = self.throughput_constraint()
             ratio = float(t0)/avg_fps
 
             rate = bounded(t0*ratio, 0.8 * t0, 1.2 * t0)
-            self.set_frame_rate(t0 * ratio)
+            self.set_frame_rate(rate)
 
         # Check pipeline options
         pipeline = 0
@@ -198,7 +201,7 @@ class VesperController(Controller):
         self.connected.add(name)
 
         if name == cfg.CAMERA_NAME:
-            self.set_frame_rate(self.values[self.VAL_T_0])
+            self.set_frame_rate(self.throughput_constraint())
         else:
             self.processors.add(name)
 
@@ -238,3 +241,10 @@ class VesperController(Controller):
         self.values[self.VAL_FRAME_RATE] = rate
         return
 
+    def set_constraints(self, throughput, makespan):
+        """Sets throughput and makespan constraints."""
+        with self.constraint_lock:
+            self.values[self.VAL_T_0] = throughput
+            self.values[self.VAL_M_0] = makespan
+
+        return

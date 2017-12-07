@@ -57,3 +57,7 @@ class Controller(MyObject, threading.Thread):
     def get_values(self):
         """Retrieves controller's data."""
         return {}
+
+    def set_constraints(self, throughput, makespan):
+        """Sets throughput and makespan constraints."""
+        return
