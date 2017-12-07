@@ -20,14 +20,13 @@ class VesperController(Controller):
     VAL_FRAME_RATE = 'Frame Rate'
     VAL_T_0 = 'T_o'
     VAL_M_0 = 'M_o'
+    VAL_PIPELINE = '~pipeline'
 
     QUEUE_TIMEOUT = 1.0
 
     def __init__(self):
         Controller.__init__(self)
         self.running = threading.Event()
-
-        self.pipeline = 0
 
         self.avg_fps = AvgItem(cfg.EWMA_ALPHA)
         self.metrics = {}
@@ -36,7 +35,7 @@ class VesperController(Controller):
         self.values[self.VAL_T_0] = cfg.T_o
         self.values[self.VAL_M_0] = cfg.M_o
         self.values[self.VAL_AVG_FPS] = 0.0
-        self.values['~pipeline'] = self.pipeline
+        self.values[self.VAL_PIPELINE] = 0
 
         self.connected = set()
         self.values['connected'] = self.connected
@@ -88,7 +87,7 @@ class VesperController(Controller):
 
     def device_usable(self, name):
         """Returns if device can satisfy makespan constraint."""
-        est_makespan = self.estimated_makespan(name, self.pipeline)
+        est_makespan = self.estimated_makespan(name, self.get_pipeline())
         self.log().debug("estimated makespan %0.6f for '%s' (constraint: %0.3f)",
                          est_makespan, name, self.makespan_constraint())
 
@@ -113,7 +112,7 @@ class VesperController(Controller):
                 # Check if device is usable, otherwise probe
                 if not self.device_usable(name):
                     # Schedule probe
-                    self.dispatcher.probe(name, self.pipeline)
+                    self.dispatcher.probe(name, self.get_pipeline())
                     continue
 
                 while self.running.is_set():
@@ -136,7 +135,7 @@ class VesperController(Controller):
 
                     # Schedule job
                     deadline = now + self.makespan_constraint()
-                    self.dispatcher.send_job(name, self.pipeline, image, timestamp, deadline)
+                    self.dispatcher.send_job(name, self.get_pipeline(), image, timestamp, deadline)
 
                     break   # Get next token
 
@@ -171,7 +170,13 @@ class VesperController(Controller):
                 if est_makespan < self.makespan_constraint():
                     partial = 1/est_makespan
                     throughput += partial
+                    self.log().debug("'%s' has estimated makespan %0.3f", name,
+                                    est_makespan)
                     self.log().debug("'%s' can contribute %0.3f", name, partial)
+
+                else:
+                    self.log().debug("'%s' too slow with estimated makespan %0.3f",
+                                     name, est_makespan)
 
             self.log().debug('throughput estimate for pipeline %d: %0.3f fps (constraint: %0.3f)',
                              i, throughput, self.throughput_constraint())
@@ -186,13 +191,11 @@ class VesperController(Controller):
 
                 break
 
-        if pipeline < self.pipeline:
+        if pipeline < self.get_pipeline():
             # Make sure image buffer doesn't grow out of control
             self.dispatcher.imagebuf = Queue.Queue()
 
-        self.pipeline = pipeline
-        self.log().info('selected pipeline %d', self.pipeline)
-
+        self.set_pipeline(pipeline)
         return
 
     def logon(self, name):
@@ -247,4 +250,14 @@ class VesperController(Controller):
             self.values[self.VAL_T_0] = throughput
             self.values[self.VAL_M_0] = makespan
 
+        return
+
+    def get_pipeline(self):
+        """Returns active pipeline."""
+        return self.values[self.VAL_PIPELINE]
+
+    def set_pipeline(self, pipeline):
+        """Sets the active pipeline."""
+        self.values[self.VAL_PIPELINE] = pipeline
+        self.log().info('selected pipeline %d', pipeline)
         return
