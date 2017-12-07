@@ -152,6 +152,7 @@ class Dispatcher(Service):
             values.update(cvalues)
 
         values['nodes'] = self.nodes
+        values['imagebuf'] = self.imagebuf.qsize()
 
         if self.dashboard:
             self.dashboard.put_values(values)
@@ -251,7 +252,25 @@ class Dispatcher(Service):
 
         return
 
+    def send_job(self, name, pipeline, image, timestamp, deadline):
+        """Sends jobs to devices."""
 
+        protocol = self.protocols.get(name)
+        if protocol:
+            job = Job(self.next_job_id(), pipeline, image)
+            job.start = timestamp
+            job.deadline = deadline
+
+            msg = Message(self.name, Message.TYPE_JOB, job)
+
+            self.log().info("sending job %d to '%s'", job.job_id, name)
+            self.log().debug('%s', job)
+            protocol.send(msg)
+
+        else:
+            self.log().warn("send_job: protocol '%s' not found", name)
+
+        return
 
 
 if __name__ == '__main__':
