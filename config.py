@@ -1,8 +1,8 @@
 """System configuration."""
 
 # Constraints
-T_o = 1     # Throughput (FPS)
-M_o = 1     # Makespan (s)
+T_o = 1.0     # Throughput (FPS)
+M_o = 1.0     # Makespan (s)
 
 # Server Parameters
 SERVER_HOST = 'localhost'

@@ -9,6 +9,7 @@ import config as cfg
 from network import Client
 from common import Message
 from common import Service
+from pipeline import Pipeline
 
 
 class Device(Service):
@@ -23,17 +24,27 @@ class Device(Service):
         self.client = Client(self, cfg.SERVER_HOST, cfg.SERVER_PORT)
         self.protocol = None
 
-        self.pipeline = None
+        self.pipelines = []
+        for p in cfg.PIPELINES:
+            pipeline = Pipeline(p[0], self)
+            pipeline.start()
+            self.pipelines.append(pipeline)
+
         return
 
     def start(self):
         """Starts the device client."""
         self.client.run()
+        self.stop()
         return
 
     def stop(self):
         """Stops the device client."""
         self.client.stop()
+
+        for pipeline in self.pipelines:
+            pipeline.stop()
+
         return
 
     def send(self, message):
@@ -83,16 +94,18 @@ class Device(Service):
 
         self.log().info('received %s', job)
 
-        t = threading.Thread(name='worker', target=self.work, args=(job,))
-        t.start()
+        self.pipelines[job.pipeline].queue.put(job)
+
+        #t = threading.Thread(name='worker', target=self.work, args=(job,))
+        #t.start()
         return
 
-    def work(self, job):
-        """Performs a job."""
-        time.sleep(cfg.PIPELINES[job.pipeline][1])
-        job.data = ' ' * 1000
-        self.send_result(job)
-        return
+    #def work(self, job):
+    #    """For testing: performs a job."""
+    #    time.sleep(cfg.PIPELINES[job.pipeline][1])
+    #    job.data = ' ' * 1000
+    #    self.send_result(job)
+    #    return
 
     def send_result(self, job):
         """Sends job result to dispatcher."""
