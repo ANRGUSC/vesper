@@ -27,6 +27,12 @@ DASH_IMAGE_WIDTH  = 640
 DASH_IMAGE_HEIGHT = 480
 DASH_REFRESH_RATE = 10
 
+# Device settings
+PIPELINES = [
+    ('ssd_mobilenet_v1_coco_2017_11_17', 0.303),
+    ('ssd_inception_v2_coco_2017_11_17', 0.409)
+]
+
 # Logging
 LOGCFG = {
     'version': 1,

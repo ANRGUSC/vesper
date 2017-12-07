@@ -89,7 +89,7 @@ class Device(Service):
 
     def work(self, job):
         """Performs a job."""
-        time.sleep(3)
+        time.sleep(0.3)
         job.data = ' ' * 1000
         self.send_result(job)
         return
