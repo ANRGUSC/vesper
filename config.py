@@ -29,8 +29,8 @@ DASH_REFRESH_RATE = 10
 
 # Device settings
 PIPELINES = [
-    ('ssd_mobilenet_v1_coco_2017_11_17', 0.303),
-    ('ssd_inception_v2_coco_2017_11_17', 0.409)
+    ('ssd_mobilenet_v1_coco_2017_11_17', 0.303, 0.21),
+    ('ssd_inception_v2_coco_2017_11_17', 0.409, 0.24)
 ]
 
 # Logging
