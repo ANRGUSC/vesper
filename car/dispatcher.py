@@ -21,8 +21,9 @@ from node import Node
 class Dispatcher(Service):
     """Handles communication from drone and devices."""
 
-    ITEM_FPS = 'FPS'
-    ITEM_MAKESPAN = 'Makespan'
+    ITEM_FPS        = 'FPS'
+    ITEM_MAKESPAN   = '~Makespan'
+    ITEM_THROUGHPUT = '~Throughput'
 
     def __init__(self, controller=None):
         Service.__init__(self, 'dispatcher')
@@ -47,6 +48,7 @@ class Dispatcher(Service):
         self.monitor = Monitor(self.process_measurements, measure_period)
         self.monitor.register_item(self.ITEM_FPS, Monitor.ITEM_RATE)
         self.monitor.register_item(self.ITEM_MAKESPAN, Monitor.ITEM_AVG)
+        self.monitor.register_item(self.ITEM_THROUGHPUT, Monitor.ITEM_RATE)
 
         self.controller = controller
         self.controller.dashboard = self.dashboard
@@ -119,17 +121,23 @@ class Dispatcher(Service):
         self.log().debug('%sjob %d proc_time: %0.6f', prefix, job.job_id, proc_time)
         self.log().debug('%sjob %d rtt: %0.6f', prefix, job.job_id, rtt)
 
-        # TODO: Ignore probe jobs
-        #if not job.probe:
-        if True:
+        now = job.end
+
+        # Ignore probe jobs
+        if not job.probe:
             self.monitor.update_item(self.ITEM_MAKESPAN, makespan)
-            # TODO: throughput
+
+            if job.deadline >= now:
+                self.monitor.update_item(self.ITEM_THROUGHPUT, 1)
+
+
+        proc_rate = cfg.PIPELINES[job.pipeline][1]/proc_time
 
         # Update device stats
         # Note: There are only single tokens for now, so no need for
         # synchronization
         node = self.nodes[name]
-        #node.processing_rate.add()
+        node.processing_rate.add(proc_rate)
         node.rtt.add(rtt)
 
         self.tokens.put(name)

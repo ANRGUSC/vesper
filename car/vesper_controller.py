@@ -127,6 +127,8 @@ class VesperController(Controller):
             rate = bounded(t0*ratio, 0.8 * t0, 1.2 * t0)
             self.set_frame_rate(t0 * ratio)
 
+        # TODO: Adjust schedule
+
         return
 
     def logon(self, name):
