@@ -2,6 +2,7 @@ import copy
 import cv2
 import numpy as np
 import Queue
+import thread
 import time
 
 import sys
@@ -195,7 +196,9 @@ class Dispatcher(Service):
         if not self.controller is None:
             self.controller.logoff(name)
 
-        del self.nodes[name]
+        if not name == cfg.CAMERA_NAME:
+            del self.nodes[name]
+
         return
 
     def send_params(self, name, params):
@@ -228,9 +231,7 @@ class Dispatcher(Service):
         ret, image_data = cv2.imencode('.jpg', blank, params)
         if ret:
             return image_data
-
         else:
-            self.log().error(traceback.format_exc())
             thread.interrupt_main()
 
     def probe(self, name, pipeline):
