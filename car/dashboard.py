@@ -162,7 +162,6 @@ class Dashboard(MyObject):
                      self.IMAGE_DEPTH)
             if not image.shape == canvas_shape:
                 # Resize image
-                print '*** RESIZING ***'
                 fx = float(cfg.DASH_IMAGE_WIDTH)/image.shape[1]
                 fy = float(cfg.DASH_IMAGE_HEIGHT)/image.shape[0]
                 image = cv2.resize(image, (0, 0), fx=fx, fy=fy)
