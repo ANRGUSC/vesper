@@ -17,7 +17,12 @@ if __name__ == '__main__':
 
     log = logging.getLogger('boot_car')
 
+    log.info('T_o: %0.2f', cfg.T_o)
+    log.info('M_o: %0.2f', cfg.M_o)
+
     controller = VesperController()
+    log.info('Controller: %s', 'VESPER')
+
     dispatcher = Dispatcher(controller)
 
     log.info('booting car...')
