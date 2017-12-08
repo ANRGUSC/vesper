@@ -3,9 +3,13 @@ Automat==0.6.0
 constantly==15.1.0
 hyperlink==17.3.1
 incremental==17.5.0
+matplotlib==2.1.0
+numexpr==2.4.6
 numpy==1.13.3
 olefile==0.44
+pandas==0.21.0
 Pillow==4.3.0
+seaborn==0.8.1
 six==1.11.0
 Twisted==17.9.0
 zope.interface==4.4.3
