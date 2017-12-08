@@ -5,7 +5,8 @@ T_o = 1.0     # Throughput (FPS)
 M_o = 1.0     # Makespan (s)
 
 # Server Parameters
-SERVER_HOST = 'localhost'
+#SERVER_HOST = 'localhost'
+SERVER_HOST = '10.0.0.1'
 SERVER_PORT = 12345
 
 MAX_DATA_SIZE = 1e6
