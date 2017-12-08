@@ -111,19 +111,13 @@ class Dispatcher(Service):
         else:
             prefix = ''
 
-        self.log().info("%sjob %d completed by '%s'", prefix, job.job_id, name)
-        self.log().debug(job)
-
         # Update system stats
         makespan = job.end - job.start
         proc_time = job.left - job.arrived
         rtt = makespan - proc_time
 
-        self.log().debug('%sjob %d makespan: %0.6f', prefix, job.job_id, makespan)
-        self.log().debug('%sjob %d proc_time: %0.6f', prefix, job.job_id, proc_time)
-        self.log().debug('%sjob %d rtt: %0.6f', prefix, job.job_id, rtt)
-
         now = job.end
+        suffix = ''
 
         # Ignore probe jobs
         if not job.probe:
@@ -131,7 +125,16 @@ class Dispatcher(Service):
 
             if job.deadline >= now:
                 self.monitor.update_item(self.ITEM_THROUGHPUT, 1)
+            else:
+                suffix = 'late'
 
+        self.log().info("%sjob %d completed by '%s' %s", prefix, job.job_id,
+                        name, suffix)
+        self.log().debug(job)
+
+        self.log().debug('%sjob %d makespan: %0.6f', prefix, job.job_id, makespan)
+        self.log().debug('%sjob %d proc_time: %0.6f', prefix, job.job_id, proc_time)
+        self.log().debug('%sjob %d rtt: %0.6f', prefix, job.job_id, rtt)
 
         proc_rate = cfg.PIPELINES[job.pipeline][1]/proc_time
 

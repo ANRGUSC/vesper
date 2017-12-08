@@ -46,10 +46,19 @@ class LogParser(object):
                             data[key].append((timestamp, value))
 
                 if message.startswith('job') and ('completed' in message):
-                    device = message.rsplit(' ', 1)[-1].replace("'", '')
+                    if not 'late' in message:
+                        data['job_completed'].append(timestamp)
+                        device = message.rsplit(' ', 1)[-1].replace("'", '')
+                    else:
+                        device = message.rsplit(' ', 2)[-2].replace("'", '')
+
                     data['results'].append((timestamp, device))
 
                 if thread == 'Controller':
+                    if message.startswith('<Job') and (not 'Probe' in message):
+                        data['job_created'].append(timestamp)
+
+                if thread == 'MainThread':
                     if message.startswith('<Job') and (not 'Probe' in message):
                         spaces = message.split()
                         job_id = int(spaces[1][:-1])
@@ -95,6 +104,9 @@ if __name__ == '__main__':
     data_frames = {}
     for key, value in results.iteritems():
         if not type(value) == list:
+            continue
+
+        if type(value[0]) != tuple:
             continue
 
         #if key == 'job_pipelines':
