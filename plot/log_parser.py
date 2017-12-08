@@ -158,14 +158,15 @@ if __name__ == '__main__':
     cur_row += 1
 
     # Completed Jobs by Device
-    ax = get_axes()
+    if 'results' in data_frames:
+        ax = get_axes()
 
-    sp = sns.stripplot(x='seconds', y='y', data=data_frames['results'], size=3)
-    ax.grid(alpha=0.7, linestyle='--')
-    ax.set_ylabel('Device')
-    ax.set_title('Completed Jobs by Device')
+        sp = sns.stripplot(x='seconds', y='y', data=data_frames['results'], size=3)
+        ax.grid(alpha=0.7, linestyle='--')
+        ax.set_ylabel('Device')
+        ax.set_title('Completed Jobs by Device')
 
-    cur_row += 1
+        cur_row += 1
 
     ax.set_xlim([min_time, max_time])
     ax.set_xlabel('Time (s)')
