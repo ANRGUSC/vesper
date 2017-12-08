@@ -15,14 +15,6 @@ from car import VesperController
 if __name__ == '__main__':
     dt = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
 
-    # Logging setup
-    mylogcfg = copy.deepcopy(cfg.LOGCFG)
-    mylogcfg['handlers']['default']['level'] = 'DEBUG'
-    mylogcfg['handlers']['file']['filename'] = 'car_output.' + dt + '.log'
-    logging.config.dictConfig(mylogcfg)
-
-    log = logging.getLogger('boot_car')
-
     # Command-line arguments
     parser = argparse.ArgumentParser(description='Car boot script')
     parser.add_argument('controller', nargs='?', default='vesper',
@@ -30,7 +22,17 @@ if __name__ == '__main__':
                         '(vesper, static)')
     parser.add_argument('option', nargs='?', default=None,
                         help='controller option (static controller only)')
+    parser.add_argument('-l', '--loglevel', default='INFO',
+                        help='log level (DEBUG|INFO|WARNING|ERROR|CRITICAL)')
     args = parser.parse_args()
+
+    # Logging setup
+    mylogcfg = copy.deepcopy(cfg.LOGCFG)
+    mylogcfg['handlers']['default']['level'] = args.loglevel.upper()
+    mylogcfg['handlers']['file']['filename'] = 'car_output.' + dt + '.log'
+    logging.config.dictConfig(mylogcfg)
+
+    log = logging.getLogger('boot_car')
 
     c = args.controller.lower()
     if c == 'vesper':
