@@ -156,7 +156,7 @@ class StaticController(Controller):
             t0 = self.throughput_constraint()
             ratio = float(t0)/avg_fps
 
-            rate = bounded(t0*ratio, 0.8 * t0, 1.2 * t0)
+            rate = bounded(t0*ratio, t0, 1.2 * t0)
             self.set_frame_rate(rate)
 
         if self.dispatcher.imagebuf.qsize() > 30:
