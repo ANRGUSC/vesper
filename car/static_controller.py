@@ -161,6 +161,7 @@ class StaticController(Controller):
 
         if self.dispatcher.imagebuf.qsize() > 30:
             # Make sure image buffer doesn't grow out of control
+            self.log().warn('clearing imagebuf')
             self.dispatcher.imagebuf = Queue.Queue()
 
         return

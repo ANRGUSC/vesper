@@ -185,16 +185,11 @@ class VesperController(Controller):
                 pipeline = i
             else:
                 # Higher pipelines will be slower, so can stop here
-                if i == 0:
-                    # Not a good sign, as even lowest pipeline is too slow
-                    self.log().warn('clearing imagebuf (0)')
-                    self.dispatcher.imagebuf = Queue.Queue()
-
                 break
 
-        if pipeline < self.get_pipeline():
+        if self.dispatcher.imagebuf.qsize() > 30:
             # Make sure image buffer doesn't grow out of control
-            self.log().warn('clearing imagebuf (1)')
+            self.log().warn('clearing imagebuf')
             self.dispatcher.imagebuf = Queue.Queue()
 
         self.set_pipeline(pipeline)
