@@ -49,6 +49,13 @@ class LogParser(object):
                     device = message.rsplit(' ', 1)[-1].replace("'", '')
                     data['results'].append((timestamp, device))
 
+                if thread == 'Controller':
+                    if message.startswith('<Job') and (not 'Probe' in message):
+                        spaces = message.split()
+                        job_id = int(spaces[1][:-1])
+                        pipeline = int(spaces[2][1:])
+                        data['job_pipelines'].append((job_id, pipeline))
+
                 #print tokens
 
         return data
@@ -68,6 +75,8 @@ if __name__ == '__main__':
     )
 
     parser.add_argument('log', help='log file to load')
+    parser.add_argument('-n', default=False, action='store_true',
+                        help='disable plotting')
     args = parser.parse_args()
 
     reader = LogParser(args.log)
@@ -86,6 +95,10 @@ if __name__ == '__main__':
     data_frames = {}
     for key, value in results.iteritems():
         if not type(value) == list:
+            continue
+
+        #if key == 'job_pipelines':
+        if not type(value[0][0]) == float:
             continue
 
         data_frames[key] = pd.DataFrame(data=value, columns=['seconds', 'y'])
@@ -171,4 +184,5 @@ if __name__ == '__main__':
     ax.set_xlim([min_time, max_time])
     ax.set_xlabel('Time (s)')
 
-    plt.show()
+    if not args.n:
+        plt.show()
