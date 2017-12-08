@@ -22,24 +22,12 @@ class LogParser(object):
         data = collections.defaultdict(list)
 
         with open(self.filename, 'r') as f:
-            start_time = 0.0
-            end_time = 0.0
-
             for line in f:
                 tokens = line.split('|')
                 timestamp, level, classname, thread, message = tokens
 
                 timestamp = float(timestamp)
                 message = message.strip()
-
-                if classname == 'boot_car':
-                    data['start_time'] = timestamp
-                    start_time = timestamp
-                    continue
-
-                if message == 'stopping dispatcher':
-                    data['end_time'] = timestamp
-                    continue
 
                 if thread == 'Monitor.callback':
                     if message.startswith('measurements:') or \
