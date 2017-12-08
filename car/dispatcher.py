@@ -106,18 +106,18 @@ class Dispatcher(Service):
         job = msg.data
         job.end = time.time()
 
-        self.log().info("job %d completed by '%s'", job.job_id, name)
+        if job.probe:
+            prefix = 'probe '
+        else:
+            prefix = ''
+
+        self.log().info("%sjob %d completed by '%s'", prefix, job.job_id, name)
         self.log().debug(job)
 
         # Update system stats
         makespan = job.end - job.start
         proc_time = job.left - job.arrived
         rtt = makespan - proc_time
-
-        if job.probe:
-            prefix = 'probe '
-        else:
-            prefix = ''
 
         self.log().debug('%sjob %d makespan: %0.6f', prefix, job.job_id, makespan)
         self.log().debug('%sjob %d proc_time: %0.6f', prefix, job.job_id, proc_time)
