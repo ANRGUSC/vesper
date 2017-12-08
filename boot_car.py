@@ -2,6 +2,7 @@
 
 import argparse
 import copy
+import datetime
 import logging.config
 import sys
 
@@ -12,10 +13,12 @@ from car import StaticController
 from car import VesperController
 
 if __name__ == '__main__':
+    dt = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+
     # Logging setup
     mylogcfg = copy.deepcopy(cfg.LOGCFG)
     mylogcfg['handlers']['default']['level'] = 'DEBUG'
-    mylogcfg['handlers']['file']['filename'] = 'car_output.log'
+    mylogcfg['handlers']['file']['filename'] = 'car_output.' + dt + '.log'
     logging.config.dictConfig(mylogcfg)
 
     log = logging.getLogger('boot_car')
