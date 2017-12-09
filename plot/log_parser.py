@@ -65,6 +65,10 @@ class LogParser(object):
                         pipeline = int(spaces[2][1:])
                         data['job_pipelines'].append((job_id, pipeline))
 
+                if message.startswith('job') and ('makespan' in message):
+                    makespan = float(message.rsplit(' ', 1)[-1])
+                    data['makespans'].append(makespan)
+
                 #print tokens
 
         return data
