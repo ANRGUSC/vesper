@@ -65,6 +65,8 @@ class Dispatcher(Service):
         self.tokens = Queue.Queue()
         self.job_id = 0
 
+        self.job_image_cache = {}
+
         self.sub_loop = 0
         return
 
@@ -127,6 +129,14 @@ class Dispatcher(Service):
                 self.monitor.update_item(self.ITEM_THROUGHPUT, 1)
             else:
                 suffix = 'late'
+
+            # Display result if image is cached
+            if self.dashboard:
+                if name in self.job_image_cache:
+                    cache = self.job_image_cache[name]
+                    if cache[0] == job.job_id:
+                        image = cv2.imdecode(cache[1], cv2.IMREAD_UNCHANGED)
+                        self.dashboard.put_result((image, job.data))
 
         self.log().info("%sjob %d completed by '%s' %s", prefix, job.job_id,
                         name, suffix)
@@ -280,6 +290,9 @@ class Dispatcher(Service):
             self.log().info("sending job %d to '%s'", job.job_id, name)
             self.log().debug('%s', job)
             protocol.send(msg)
+
+            # Cache images for results display
+            self.job_image_cache[name] = (job.job_id, job.data)
 
         else:
             self.log().warn("send_job: protocol '%s' not found", name)

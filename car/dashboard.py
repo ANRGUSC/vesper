@@ -1,4 +1,6 @@
 import cv2
+import numpy as np
+import os
 import threading
 #import tkFont
 import Tkinter as Tk
@@ -9,17 +11,27 @@ from PIL import ImageTk
 from twisted.internet import reactor
 from twisted.internet import tksupport
 
-import sys
-sys.path.append('../')
-
 import config as cfg
 
 from common import MyObject
+
+## Objection detection imports
+import sys
+sys.path.append('./tfmodels/research/object_detection')
+
+from utils import label_map_util
+from utils import visualization_utils as vis_util
+
+
+TF_ODAPI_ROOT = './tfmodels/research/object_detection'
 
 
 class Dashboard(MyObject):
     """GUI for system interaction."""
     IMAGE_DEPTH = 3
+
+    PATH_TO_LABELS = os.path.join(TF_ODAPI_ROOT, 'data', 'mscoco_label_map.pbtxt')
+    NUM_CLASSES = 90
 
     def __init__(self, master=None):
         if master is None:
@@ -65,6 +77,14 @@ class Dashboard(MyObject):
                                     command=self.set_constraints)
         self.set_button.grid(row=2, column=1)
 
+        tl = Tk.Toplevel(self.master)
+
+        self.result_canvas = Tk.Canvas(tl,
+                                width=cfg.DASH_IMAGE_WIDTH,
+                                height=cfg.DASH_IMAGE_HEIGHT)
+        self.result_image = self.result_canvas.create_image(0, 0, anchor=Tk.NW)
+        self.result_canvas.grid()
+
         # Dashboard state
         self.running = threading.Event()
 
@@ -72,8 +92,21 @@ class Dashboard(MyObject):
         self.image = None
         self.new_image = False
 
+        self.result = None
+        self.new_result = False
+
         self.controller = None
         self.values = {}
+
+        self.load_label_map() # For displaying results
+        return
+
+    def load_label_map(self):
+        label_map = label_map_util.load_labelmap(self.PATH_TO_LABELS)
+        categories = label_map_util.convert_label_map_to_categories(label_map,
+                                                                    max_num_classes=self.NUM_CLASSES,
+                                                                    use_display_name=True)
+        self.category_index = label_map_util.create_category_index(categories)
         return
 
     def make_entry(self, parent, caption, row, text):
@@ -173,12 +206,47 @@ class Dashboard(MyObject):
             self.canvas.itemconfig(self.canvas_image, image=img_tk)
             self.canvas.image = img_tk # reference to keep image alive
 
+        if self.new_result:
+            self.new_result = False
+
+            image = self.result[0]
+            (boxes, scores, classes, num) = self.result[1]
+
+            vis_util.visualize_boxes_and_labels_on_image_array(
+                image,
+                np.squeeze(boxes),
+                np.squeeze(classes).astype(np.int32),
+                np.squeeze(scores),
+                self.category_index,
+                use_normalized_coordinates=True,
+                line_thickness=2)
+
+            canvas_shape = (cfg.DASH_IMAGE_HEIGHT, cfg.DASH_IMAGE_WIDTH,
+                     self.IMAGE_DEPTH)
+            if not image.shape == canvas_shape:
+                # Resize image
+                fx = float(cfg.DASH_IMAGE_WIDTH)/image.shape[1]
+                fy = float(cfg.DASH_IMAGE_HEIGHT)/image.shape[0]
+                image = cv2.resize(image, (0, 0), fx=fx, fy=fy)
+
+            # Convert image from OpenCV format to Tk format
+            img_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            img_tk = ImageTk.PhotoImage(Image.fromarray(img_rgb))
+
+            self.result_canvas.itemconfig(self.result_image, image=img_tk)
+            self.result_canvas.image = img_tk # reference to keep image alive
+
         self.loop()
         return
 
     def put_image(self, image):
         self.image = image
         self.new_image = True
+        return
+
+    def put_result(self, result):
+        self.result = result
+        self.new_result = True
         return
 
     def put_values(self, values):
