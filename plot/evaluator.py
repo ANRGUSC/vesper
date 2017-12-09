@@ -17,6 +17,8 @@ from log_parser import LogParser
 colors = ['b', 'g', 'c', 'm', 'y']
 markers = ['^', 'o', 's', 'd']
 
+devices = ['car'] + [ 'rsu%d' % x for x in range(5) ]
+
 # Empirical CDF
 def ecdf(x, makespan):
     xs = np.sort(x)
@@ -40,6 +42,7 @@ if __name__ == '__main__':
     metrics = {}
     T_o = None
     M_o = {}
+    dev_ratio = []
 
     folders = os.listdir(args.folder)
     folders.sort()
@@ -54,6 +57,7 @@ if __name__ == '__main__':
 
         pipeline_counts = np.zeros(len(cfg.PIPELINES), dtype=np.int)
         metrics[algo + '.makespans'] = []
+        dev_counts = np.zeros(len(devices))
 
         for filename in log_list:
             filepath = os.path.join(args.folder, algo, filename)
@@ -71,11 +75,13 @@ if __name__ == '__main__':
             for i in range(len(keys)):
                 pipeline_counts[keys[i]] += values[keys[i]]
 
+            # Throughput constraint
             if T_o is None:
                 T_o = results['T_o'][0][1]
             else:
                 assert(T_o == results['T_o'][0][1])
 
+            # Makespan constraint
             if not algo in M_o:
                 M_o[algo] = results['M_o'][0][1]
             else:
@@ -86,9 +92,23 @@ if __name__ == '__main__':
             total_jobs += len(results['job_completed'])
             total_time_ms += results['job_completed'][-1] - results['job_created'][0]
 
+            # Device assignments
+            df_dev = pd.DataFrame(data=results['results'],
+                              columns=['seconds', 'devices'])
+
+            temp_counts = df_dev.devices.value_counts()
+            for dev_idx, dev in zip(range(len(devices)), devices):
+                if dev in temp_counts:
+                    dev_counts[dev_idx] += temp_counts[dev]
+
         metrics[algo + '.throughput'] = total_jobs / (total_time_ms/1000)
         metrics[algo + '.accuracy'] = np.sum(pipeline_counts *
                                              pipeline_accuracies) / total_jobs
+
+        dev_ratio.append(dev_counts / total_jobs)
+
+    dev_ratio = np.array(dev_ratio)
+    dev_existance = np.sum(dev_ratio, 0) > 0
 
     #print metrics
 
@@ -147,4 +167,24 @@ if __name__ == '__main__':
         plt.gca().legend(loc=0)
         plt.gca().set_ylim(0, 1.1)
         plt.gca().set_xlim(0, 1.1 * M_o_max)
+        plt.show()
+
+    if True:
+        index = np.arange(len(folders))
+        bar_width = 0.2
+        opacity = 0.6
+
+        for dev_idx, dev in zip(range(len(devices)), devices):
+            if dev_existance[dev_idx]:
+                plt.bar(index + dev_idx * bar_width, dev_ratio[:, dev_idx], bar_width,
+                        alpha=opacity,
+                        color=colors[dev_idx],
+                        label=dev)
+
+        plt.xlabel('Algorithms')
+        plt.ylabel('Percentage')
+        plt.title('Fraction of Jobs Using a Device')
+        plt.xticks(index + bar_width, folders)
+        plt.legend(loc=0)
+        plt.gca().set_ylim(0, 1)
         plt.show()
