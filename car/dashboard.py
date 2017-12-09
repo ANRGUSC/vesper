@@ -17,6 +17,7 @@ from common import MyObject
 
 ## Objection detection imports
 import sys
+sys.path.append('./tfmodels/research')
 sys.path.append('./tfmodels/research/object_detection')
 
 from utils import label_map_util
