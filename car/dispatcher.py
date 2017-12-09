@@ -224,6 +224,8 @@ class Dispatcher(Service):
         if not name == cfg.CAMERA_NAME:
             del self.nodes[name]
 
+        self.job_image_cache.pop(name, None)
+
         return
 
     def send_params(self, name, params):
