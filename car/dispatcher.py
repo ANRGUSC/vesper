@@ -81,7 +81,7 @@ class Dispatcher(Service):
         if not self.controller is None:
             self.controller.logon(name)
 
-        if not name == cfg.CAMERA_NAME:
+        if name != cfg.CAMERA_NAME:
             self.nodes[name] = Node(name)
             self.tokens.put(name)
 
@@ -103,7 +103,12 @@ class Dispatcher(Service):
 
     def handle_result(self, protocol, msg):
         """Handles result."""
-        name = protocol.name
+        try:
+            name = protocol.name
+        except AttributeError:
+            self.log().warning("result from protocol with no name")
+            thread.interrupt_main()
+            return
 
         job = msg.data
         job.end = time.time()
@@ -214,14 +219,19 @@ class Dispatcher(Service):
 
     def disconnected(self, protocol):
         """Handles device disconnections."""
-        name = protocol.name
-        del self.protocols[name]
+        try:
+            name = protocol.name
+        except AttributeError:
+            self.log().warning("disconnected protocol has no name")
+            return
+
+        self.protocols.pop(name, None)
         self.log().info("'%s' disconnected", name)
 
         if not self.controller is None:
             self.controller.logoff(name)
 
-        if not name == cfg.CAMERA_NAME:
+        if name != cfg.CAMERA_NAME:
             del self.nodes[name]
 
         self.job_image_cache.pop(name, None)
