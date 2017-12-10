@@ -1,3 +1,7 @@
 [submodule "tfmodels"]
 	path = tfmodels
 	url = https://github.com/tensorflow/models.git
+[submodule "darknet"]
+	path = darknet
+	url = https://github.com/pjreddie/darknet.git
+	branch = master
