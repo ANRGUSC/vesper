@@ -304,7 +304,8 @@ class Dispatcher(Service):
             protocol.send(msg)
 
             # Cache images for results display
-            self.job_image_cache[name] = (job.job_id, job.data)
+            if cfg.SHOW_RESULTS:
+                self.job_image_cache[name] = (job.job_id, job.data)
 
         else:
             self.log().warn("send_job: protocol '%s' not found", name)

@@ -78,13 +78,18 @@ class Dashboard(MyObject):
                                     command=self.set_constraints)
         self.set_button.grid(row=2, column=1)
 
-        tl = Tk.Toplevel(self.master)
 
-        self.result_canvas = Tk.Canvas(tl,
-                                width=cfg.DASH_IMAGE_WIDTH,
-                                height=cfg.DASH_IMAGE_HEIGHT)
-        self.result_image = self.result_canvas.create_image(0, 0, anchor=Tk.NW)
-        self.result_canvas.grid()
+        # Results window
+        if cfg.SHOW_RESULTS:
+            tl = Tk.Toplevel(self.master)
+
+            self.result_canvas = Tk.Canvas(tl,
+                                    width=cfg.DASH_IMAGE_WIDTH,
+                                    height=cfg.DASH_IMAGE_HEIGHT)
+            self.result_image = self.result_canvas.create_image(0, 0, anchor=Tk.NW)
+            self.result_canvas.grid()
+
+            self.load_label_map() # For displaying results
 
         # Dashboard state
         self.running = threading.Event()
@@ -98,8 +103,6 @@ class Dashboard(MyObject):
 
         self.controller = None
         self.values = {}
-
-        self.load_label_map() # For displaying results
         return
 
     def load_label_map(self):
@@ -246,8 +249,9 @@ class Dashboard(MyObject):
         return
 
     def put_result(self, result):
-        self.result = result
-        self.new_result = True
+        if cfg.SHOW_RESULTS:
+            self.result = result
+            self.new_result = True
         return
 
     def put_values(self, values):

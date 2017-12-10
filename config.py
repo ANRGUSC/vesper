@@ -18,6 +18,7 @@ MEASURES_PER_LOOP    = 3
 EWMA_ALPHA = 0.8
 
 DASHBOARD = True
+SHOW_RESULTS = False
 
 # Camera settings
 CAMERA_NAME = 'drone'
