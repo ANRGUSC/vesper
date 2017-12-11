@@ -152,11 +152,16 @@ class StaticController(Controller):
 
         if cfg.CAMERA_NAME in self.connected:
             # Adjust frame rate
-            avg_fps = self.values[self.VAL_AVG_FPS]
-            t0 = self.throughput_constraint()
-            ratio = float(t0)/avg_fps
+            try:
+                avg_fps = self.values[self.VAL_AVG_FPS]
+                t0 = self.throughput_constraint()
+                ratio = float(t0)/avg_fps
 
-            rate = bounded(t0*ratio, t0, 1.2 * t0)
+                rate = bounded(t0*ratio, t0, 1.2 * t0)
+
+            except ZeroDivisionError:
+                rate = t0
+
             self.set_frame_rate(rate)
 
         if self.dispatcher.imagebuf.qsize() > 30:
