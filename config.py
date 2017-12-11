@@ -30,9 +30,19 @@ DASH_IMAGE_HEIGHT = 480
 DASH_REFRESH_RATE = 10
 
 # Device settings
+TINY_YOLO_PTIMES = {
+    'car': 0.098,
+    'rsu': 0.275
+}
+
+YOLO_V2_PTIMES = {
+    'car': 0.188,
+    'rsu': 0.638
+}
+
 PIPELINES = [
-    ('tiny_yolo', 0.0795, 0.571, 'TinyYOLO'),
-    ('yolo_v2', 0.4405, 0.768, 'YOLOv2')
+    ('tiny_yolo', TINY_YOLO_PTIMES, 0.571, 'TinyYOLO'),
+    ('yolo_v2', YOLO_V2_PTIMES, 0.768, 'YOLOv2')
 ]
 
 #PIPELINES = [

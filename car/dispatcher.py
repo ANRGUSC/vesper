@@ -151,7 +151,7 @@ class Dispatcher(Service):
         self.log().debug('%sjob %d proc_time: %0.6f', prefix, job.job_id, proc_time)
         self.log().debug('%sjob %d rtt: %0.6f', prefix, job.job_id, rtt)
 
-        proc_rate = cfg.PIPELINES[job.pipeline][1]/proc_time
+        proc_rate = cfg.PIPELINES[job.pipeline][1][name[:3]]/proc_time
 
         # Update device stats
         node = self.nodes[name]

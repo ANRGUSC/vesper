@@ -77,7 +77,7 @@ class StaticController(Controller):
 
         with node.lock:
             try:
-                makespan = cfg.PIPELINES[pipeline][1] / node.processing_rate.get()
+                makespan = cfg.PIPELINES[pipeline][1][name[:3]] / node.processing_rate.get()
             except ZeroDivisionError:
                 return sys.maxint
 
