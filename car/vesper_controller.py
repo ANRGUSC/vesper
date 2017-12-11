@@ -186,7 +186,7 @@ class VesperController(Controller):
             self.log().debug('throughput estimate for pipeline %d: %0.3f fps (constraint: %0.3f)',
                              i, throughput, self.throughput_constraint())
 
-            if throughput >= self.throughput_constraint():
+            if throughput >= self.throughput_constraint()+1:
                 pipeline = i
             else:
                 # Higher pipelines will be slower, so can stop here

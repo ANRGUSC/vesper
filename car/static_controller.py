@@ -87,6 +87,8 @@ class StaticController(Controller):
 
     def device_usable(self, name):
         """Returns if device can satisfy makespan constraint."""
+        return True
+
         est_makespan = self.estimated_makespan(name, self.get_pipeline())
         self.log().debug("estimated makespan %0.6f for '%s' (constraint: %0.3f)",
                          est_makespan, name, self.makespan_constraint())
