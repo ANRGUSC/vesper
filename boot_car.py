@@ -22,7 +22,7 @@ if __name__ == '__main__':
                         '(vesper, static)')
     parser.add_argument('option', nargs='?', default=None,
                         help='controller option (static controller only)')
-    parser.add_argument('-l', '--loglevel', default='INFO',
+    parser.add_argument('-l', '--loglevel', default='WARNING',
                         help='log level (DEBUG|INFO|WARNING|ERROR|CRITICAL)')
     args = parser.parse_args()
 

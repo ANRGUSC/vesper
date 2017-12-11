@@ -12,7 +12,7 @@ if __name__ == '__main__':
     # Command-line arguments
     parser = argparse.ArgumentParser(description='Device boot script')
     parser.add_argument('name', type=str, help='device name')
-    parser.add_argument('-l', '--loglevel', default='INFO',
+    parser.add_argument('-l', '--loglevel', default='WARNING',
                         help='log level (DEBUG|INFO|WARNING|ERROR|CRITICAL)')
     args = parser.parse_args()
 
