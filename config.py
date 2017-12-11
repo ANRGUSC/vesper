@@ -31,9 +31,14 @@ DASH_REFRESH_RATE = 10
 
 # Device settings
 PIPELINES = [
-    ('ssd_mobilenet_v1_coco_2017_11_17', 0.303, 0.21, 'MobileNet SSD'),
-    ('ssd_inception_v2_coco_2017_11_17', 0.409, 0.24, 'Inception SSD')
+    ('tiny_yolo', 0.0795, 0.571, 'TinyYOLO'),
+    ('yolo_v2', 0.4405, 0.768, 'YOLOv2')
 ]
+
+#PIPELINES = [
+#    ('ssd_mobilenet_v1_coco_2017_11_17', 0.303, 0.21, 'MobileNet SSD'),
+#    ('ssd_inception_v2_coco_2017_11_17', 0.409, 0.24, 'Inception SSD')
+#]
 
 # Logging
 LOGCFG = {

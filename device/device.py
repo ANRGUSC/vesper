@@ -9,7 +9,8 @@ import config as cfg
 from network import Client
 from common import Message
 from common import Service
-from pipeline import Pipeline
+#from pipeline import Pipeline
+from yolo_pipeline import YoloPipeline
 
 
 class Device(Service):
@@ -26,7 +27,7 @@ class Device(Service):
 
         self.pipelines = []
         for p in cfg.PIPELINES:
-            pipeline = Pipeline(p[0], self)
+            pipeline = YoloPipeline(p[0], self)
             pipeline.start()
             self.pipelines.append(pipeline)
 
