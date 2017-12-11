@@ -1,7 +1,7 @@
 import cv2
 import Queue
-import multiprocessing
 import thread
+import threading
 
 import sys
 sys.path.append('./')
@@ -13,13 +13,13 @@ from common import MyObject
 sys.path.append('./darknet/python')
 import darknet
 
-class YoloPipeline(MyObject, multiprocessing.Process):
+class YoloPipeline(MyObject, threading.Thread):
     """Encapsulates a YOLO object detection network."""
 
     QUEUE_TIMEOUT = 1.0
 
     def __init__(self, name, device):
-        multiprocessing.Process.__init__(self, name=name)
+        threading.Thread.__init__(self, name=name)
         self.device = device
 
         if name == 'tiny_yolo':
@@ -35,14 +35,14 @@ class YoloPipeline(MyObject, multiprocessing.Process):
             thread.interrupt_main()
             return
 
-        self.running = multiprocessing.Event()
-        self.queue = multiprocessing.Queue()
+        self.running = threading.Event()
+        self.queue = Queue.Queue()
         return
 
     def start(self):
         """Starts pipeline."""
         self.running.set()
-        multiprocessing.Process.start(self)
+        threading.Thread.start(self)
         return
 
     def run(self):
