@@ -17,6 +17,7 @@ from dispatcher import Dispatcher
 
 class StaticController(Controller):
     VAL_AVG_FPS = 'FPS.avg'
+    VAL_AVG_TPUT = 'Throughput.avg'
     VAL_FRAME_RATE = 'Frame Rate'
     VAL_T_0 = 'T_o'
     VAL_M_0 = 'M_o'
@@ -29,12 +30,14 @@ class StaticController(Controller):
         self.running = threading.Event()
 
         self.avg_fps = AvgItem(cfg.EWMA_ALPHA)
+        self.avg_tput = AvgItem(cfg.EWMA_ALPHA)
         self.metrics = {}
 
         self.values = {}
         self.values[self.VAL_T_0] = cfg.T_o
         self.values[self.VAL_M_0] = cfg.M_o
         self.values[self.VAL_AVG_FPS] = 0.0
+        self.values[self.VAL_AVG_TPUT] = 0.0
         self.values[self.VAL_PIPELINE] = pipeline
 
         self.connected = set()
@@ -155,9 +158,9 @@ class StaticController(Controller):
         if cfg.CAMERA_NAME in self.connected:
             # Adjust frame rate
             try:
-                avg_fps = self.values[self.VAL_AVG_FPS]
+                avg_tput = self.values[self.VAL_AVG_TPUT]
                 t0 = self.throughput_constraint()
-                ratio = float(t0)/avg_fps
+                ratio = float(t0)/avg_tput
 
                 rate = bounded(t0*ratio, t0, 1.2 * t0)
 
@@ -200,6 +203,11 @@ class StaticController(Controller):
             fps = metrics[Dispatcher.ITEM_FPS]
             self.avg_fps.add(fps)
             self.values[self.VAL_AVG_FPS] = self.avg_fps.pull()
+
+        if Dispatcher.ITEM_THROUGHPUT in metrics:
+            throughput = metrics[Dispatcher.ITEM_THROUGHPUT]
+            self.avg_tput.add(throughput)
+            self.values[self.VAL_AVG_TPUT] = self.avg_tput.pull()
 
         self.log().debug('values: %s', self.values)
         return
