@@ -55,6 +55,7 @@ if __name__ == '__main__':
 
     log.info('T_o: %0.2f', cfg.T_o)
     log.info('M_o: %0.2f', cfg.M_o)
+    log.info('CONTROLLER_LOOP_TIME: %d', cfg.CONTROLLER_LOOP_TIME)
 
 
     dispatcher = Dispatcher(controller)
