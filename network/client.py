@@ -64,8 +64,6 @@ class ClientProtocol(MyObject, NetstringReceiver, TimeoutMixin):
         message = pickle.dumps(data, pickle.HIGHEST_PROTOCOL)
         self.log().debug('sending %s (%d bytes)', data, len(message))
         reactor.callFromThread(reactor.callLater, 0, self.sendString, message)
-
-        self.heartbeat.reset()
         return
 
     def sendHeartbeat(self):
