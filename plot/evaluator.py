@@ -15,7 +15,7 @@ import config as cfg
 from log_parser import LogParser
 
 colors = ['b', 'g', 'c', 'm', 'y']
-markers = ['^', 'o', 's', 'd']
+markers = ['^', 'o', 's', 'd', '+']
 
 devices = ['car'] + [ 'rsu%d' % x for x in range(5) ]
 
