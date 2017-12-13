@@ -16,13 +16,17 @@ from yolo_pipeline import YoloPipeline
 class Device(Service):
     """Handles communication between a device and the dispatcher."""
 
-    def __init__(self, name):
+    def __init__(self, name, client=None):
         Service.__init__(self, name)
 
         self.handlers[Message.TYPE_PARAMS] = self.handle_params
         self.handlers[Message.TYPE_JOB] = self.handle_job
 
-        self.client = Client(self, cfg.SERVER_HOST, cfg.SERVER_PORT)
+        if client:
+            self.client = client(self)
+        else:
+            self.client = Client(self, cfg.SERVER_HOST, cfg.SERVER_PORT)
+
         self.protocol = None
 
         self.pipelines = []
