@@ -159,7 +159,7 @@ class StaticController(Controller):
             # Adjust frame rate
             try:
                 avg_tput = self.values[self.VAL_AVG_TPUT]
-                t0 = self.throughput_constraint()
+                t0 = 1.01 * self.throughput_constraint()
                 ratio = float(t0)/avg_tput
 
                 rate = bounded(t0*ratio, t0, 1.2 * t0)
