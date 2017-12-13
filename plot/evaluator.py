@@ -73,7 +73,7 @@ if __name__ == '__main__':
             keys = counts.keys()
             values = counts.values
             for i in range(len(keys)):
-                pipeline_counts[keys[i]] += values[keys[i]]
+                pipeline_counts[keys[i]] += values[i]
 
             # Throughput constraint
             if T_o is None:
