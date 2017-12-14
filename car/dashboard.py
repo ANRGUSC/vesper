@@ -70,9 +70,9 @@ class Dashboard(MyObject):
         self.frame2.grid(row=1, column=1)
 
         self.throughput_entry = self.make_entry(self.frame2, 'Throughput', 0,
-                                                '%0.1f' % cfg.T_o)
+                                                '%0.2f' % cfg.T_o)
         self.makespan_entry = self.make_entry(self.frame2, 'Makespan', 1,
-                                                '%0.1f' % cfg.M_o)
+                                                '%0.2f' % cfg.M_o)
 
         self.set_button = Tk.Button(self.frame2, text='Set Constraints',
                                     command=self.set_constraints)
