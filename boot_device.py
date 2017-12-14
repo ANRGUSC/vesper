@@ -19,7 +19,7 @@ if __name__ == '__main__':
     # Logging setup
     mylogcfg = copy.deepcopy(cfg.LOGCFG)
     mylogcfg['handlers']['default']['level'] = args.loglevel.upper()
-    mylogcfg['handlers']['file']['filename'] = 'device_output.log'
+    mylogcfg['handlers']['file']['filename'] = '/dev/null'
     logging.config.dictConfig(mylogcfg)
 
     log = logging.getLogger('boot_device')
