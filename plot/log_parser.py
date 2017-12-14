@@ -21,6 +21,8 @@ class LogParser(object):
     def extract(self):
         data = collections.defaultdict(list)
 
+        late_jobs = set()
+
         with open(self.filename, 'r') as f:
             for line in f:
                 tokens = line.split('|')
@@ -52,6 +54,9 @@ class LogParser(object):
                     else:
                         device = message.rsplit(' ', 2)[-2].replace("'", '')
 
+                        job_id = int(message.split(' ', 2)[1])
+                        late_jobs.add(job_id)
+
                     data['results'].append((timestamp, device))
 
                 if thread == 'Controller':
@@ -63,6 +68,11 @@ class LogParser(object):
                         spaces = message.split()
                         job_id = int(spaces[1][:-1])
                         pipeline = int(spaces[2][1:])
+
+                        if job_id in late_jobs:
+                            # Skip
+                            continue
+
                         data['job_pipelines'].append((job_id, pipeline))
 
                 if message.startswith('job') and ('makespan' in message):

@@ -101,6 +101,8 @@ if __name__ == '__main__':
                 if dev in temp_counts:
                     dev_counts[dev_idx] += temp_counts[dev]
 
+        assert(np.sum(pipeline_counts) == total_jobs)
+
         metrics[algo + '.throughput'] = total_jobs / (total_time_ms/1000)
         metrics[algo + '.accuracy'] = np.sum(pipeline_counts *
                                              pipeline_accuracies) / total_jobs
