@@ -155,20 +155,6 @@ class StaticController(Controller):
         """Controller action loop."""
         self.log().info('controller loop')
 
-        if cfg.CAMERA_NAME in self.connected:
-            # Adjust frame rate
-            try:
-                avg_tput = self.values[self.VAL_AVG_TPUT]
-                t0 = 1.01 * self.throughput_constraint()
-                ratio = float(t0)/avg_tput
-
-                rate = bounded(t0*ratio, t0, 1.2 * t0)
-
-            except ZeroDivisionError:
-                rate = t0
-
-            self.set_frame_rate(rate)
-
         if self.dispatcher.imagebuf.qsize() > 30:
             # Make sure image buffer doesn't grow out of control
             self.log().warn('clearing imagebuf')
