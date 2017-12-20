@@ -142,7 +142,8 @@ if __name__ == '__main__':
 
     ax.set_ylim([0, data_frames['FPS'].y.max() * 1.05])
     ax.grid(alpha=0.7, linestyle='--')
-    ax.legend(['Recv. Rate','Recv. Rate (ewma)'], loc=0)
+    ax.legend(['Recv. Rate','Recv. Rate (EWMA)'], loc=0)
+    ax.set_ylabel('FPS')
     ax.set_title('Image Reception Rate')
 
     cur_row += 1
@@ -154,8 +155,9 @@ if __name__ == '__main__':
 
     ax.set_ylim([0, data_frames['Throughput'].y.max() * 1.05])
     ax.grid(alpha=0.7, linestyle='--')
-    ax.legend(['Throughput (FPS)'], loc=0)
-    ax.set_title('Job Completion Rate')
+    ax.legend(['Throughput'], loc=0)
+    ax.set_ylabel('FPS')
+    ax.set_title('Image Completion Rate')
 
     cur_row += 1
 
@@ -166,8 +168,9 @@ if __name__ == '__main__':
 
     ax.set_ylim([0, data_frames['Makespan'].y.max() * 1.05])
     ax.grid(alpha=0.7, linestyle='--')
-    ax.legend(['Avg. Makespan (s)'], loc=0)
-    ax.set_title('Job Makespan')
+    ax.legend(['Avg. Makespan'], loc=0)
+    ax.set_ylabel('Seconds')
+    ax.set_title('Processing Makespan')
 
     cur_row += 1
 
@@ -203,12 +206,12 @@ if __name__ == '__main__':
         sp = sns.stripplot(x='seconds', y='y', data=data_frames['results'], size=3)
         ax.grid(alpha=0.7, linestyle='--')
         ax.set_ylabel('Device')
-        ax.set_title('Completed Jobs by Device')
+        ax.set_title('Completed Images by Device')
 
         cur_row += 1
 
     ax.set_xlim([min_time, max_time])
-    ax.set_xlabel('Time (s)')
+    ax.set_xlabel('Time (ms)')
 
     if not args.n:
         plt.show()
