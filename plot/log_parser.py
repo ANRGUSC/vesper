@@ -3,6 +3,7 @@ from __future__ import division
 
 import argparse
 import collections
+import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -107,11 +108,14 @@ if __name__ == '__main__':
 
     #print data
 
-    nrows = 6
+    nrows = 5
     cur_row = 0
 
     min_time = sys.maxint
     max_time = 0.0
+
+    font = {'size'   : 12}
+    matplotlib.rc('font', **font)
 
     fig, axes = plt.subplots(nrows=nrows, ncols=1, figsize=(15, 10), sharex=True)
 
@@ -175,17 +179,18 @@ if __name__ == '__main__':
     cur_row += 1
 
     # Requested Frame Rate
-    ax = get_axes()
-    data_frames['Frame Rate'].plot(x='seconds', y='y', legend=None,
-                                   ax=ax, color='g')
+    if False:
+        ax = get_axes()
+        data_frames['Frame Rate'].plot(x='seconds', y='y', legend=None,
+                                       ax=ax, color='g')
 
-    ax.set_ylim([data_frames['Frame Rate'].y.min() * 0.95,
-                 data_frames['Frame Rate'].y.max() * 1.05])
-    ax.grid(alpha=0.7, linestyle='--')
-    ax.set_ylabel('Frame Rate')
-    ax.set_title('Requested Frame Rate')
+        ax.set_ylim([data_frames['Frame Rate'].y.min() * 0.95,
+                     data_frames['Frame Rate'].y.max() * 1.05])
+        ax.grid(alpha=0.7, linestyle='--')
+        ax.set_ylabel('Frame Rate')
+        ax.set_title('Requested Frame Rate')
 
-    cur_row += 1
+        cur_row += 1
 
     # Pipeline Selection
     ax = get_axes()

@@ -2,6 +2,7 @@
 from __future__ import division
 
 import argparse
+import matplotlib
 import matplotlib.pyplot as plt
 import os
 import pandas as pd
@@ -113,6 +114,9 @@ if __name__ == '__main__':
     dev_existance = np.sum(dev_ratio, 0) > 0
 
     #print metrics
+
+    font = {'size'   : 12}
+    matplotlib.rc('font', **font)
 
     if True:
         for i in range(len(cfg.PIPELINES)):
